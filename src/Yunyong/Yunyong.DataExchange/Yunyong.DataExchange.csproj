@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.0.23</Version>
+    <Authors>Meng.NET</Authors>
+    <Company></Company>
+    <Product>EasyDAL.Exchange</Product>
+    <Description>The fastest and best ORM lite on .NET Core for MySQL ! 
+        -- 友好, 轻量, 极致性能, 无任何第三方依赖, 持续演进~~</Description>
+    <Copyright>2018 myself</Copyright>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://www.cnblogs.com/Meng-NET/p/8963476.html</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/liumeng0403/EasyDAL.Exchange</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>easy,easydal,exchange,orm,ormlite,mysql,mysqlorm</PackageTags>
+    <PackageReleaseNotes>由一个开发项目中的 idea 演变,产生与实现!
+       -- https://www.cnblogs.com/Meng-NET/p/8963476.html</PackageReleaseNotes>
+    <ApplicationIcon>X\favicon.ico</ApplicationIcon>
+    <Win32Resource />
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Yunyong.Core\Yunyong.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="SourceLink.Create.GitHub" Version="2.8.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspectCore.Extensions.DependencyInjection" Version="0.7.0" />
+    <PackageReference Include="EasyNetQ" Version="3.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Yunyong.Core\Yunyong.Core.csproj" />
+    <ProjectReference Include="..\Yunyong.EventBus\Yunyong.EventBus.csproj" />
+  </ItemGroup>
+
+</Project>

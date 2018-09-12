@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.0.0</Version>
+    <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Yunyong.Cache\Yunyong.Cache.csproj" />
+  </ItemGroup>
+</Project>

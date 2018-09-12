@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" Version="0.42.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Yunyong.Core\Yunyong.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.0.0</Version>
+    <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable.Surrogate" Version="1.1.2" />
+  </ItemGroup>
+
+</Project>
