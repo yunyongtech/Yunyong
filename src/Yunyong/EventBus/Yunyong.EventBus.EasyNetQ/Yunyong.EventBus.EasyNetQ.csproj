@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,7 +10,7 @@
     <Copyright>2018 myself</Copyright>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://www.cnblogs.com/Meng-NET/p/8963476.html</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/liumeng0403/EasyDAL.Exchange</RepositoryUrl>
+    <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>easy,easydal,exchange,orm,ormlite,mysql,mysqlorm</PackageTags>
     <PackageReleaseNotes>由一个开发项目中的 idea 演变,产生与实现!
