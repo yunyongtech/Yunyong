@@ -1,36 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Yunyong.Core;
-using Yunyong.DataExchange.Core;
+﻿using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Enums;
+using Yunyong.DataExchange.Helper;
+using Yunyong.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+using Yunyong.DataExchange.Common;
 
 namespace Yunyong.DataExchange.UserFacade.Query
 {
-    public class Selecter<M>: Operator
+    public class Selecter<M>: Operator,IMethodObject
     {
         internal Selecter(DbContext dc)
         {
             DC = dc;
-        }
-
-        /// <summary>
-        /// 过滤条件起点
-        /// </summary>
-        /// <param name="func">格式: it => it.CreatedOn >= WhereTest.CreatedOn</param>
-        public QueryFilter<M> Where(Expression<Func<M, bool>> func)
-        {
-            WhereHandle(func,CrudTypeEnum.Query);
-            return new QueryFilter<M>(DC);
-        }
-        /// <summary>
-        /// 过滤条件起点 -- 设置多个条件
-        /// </summary>
-        public QueryFilter<M> Where(object mWhere)
-        {
-            DynamicWhereHandle<M>(mWhere);
-            return new QueryFilter<M>(DC);
+            DC.OP = this;
         }
 
         /// <summary>

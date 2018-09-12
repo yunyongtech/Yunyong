@@ -1,4 +1,8 @@
-﻿namespace Yunyong.DataExchange.Enums
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Yunyong.DataExchange.Enums
 {
     public enum CrudTypeEnum
     {

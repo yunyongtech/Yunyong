@@ -1,5 +1,7 @@
-﻿using System;
-using Yunyong.DataExchange.Enums;
+﻿using Yunyong.DataExchange.Enums;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Yunyong.DataExchange.Common
 {

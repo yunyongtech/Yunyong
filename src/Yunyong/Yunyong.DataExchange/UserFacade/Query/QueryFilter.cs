@@ -1,41 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Yunyong.Core;
+﻿using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Common;
 using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Enums;
 using Yunyong.DataExchange.Helper;
+using Yunyong.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Yunyong.DataExchange.UserFacade.Query
 {
-    public class QueryFilter<M> : Operator
+    public class QueryFilter<M> : Operator,IMethodObject
     {
         internal QueryFilter(DbContext dc)
             : base()
         {
             DC = dc;
-        }
-
-        /// <summary>
-        /// 与条件
-        /// </summary>
-        /// <param name="func">格式: it => it.CreatedOn >= WhereTest.DateTime_大于等于</param>
-        public QueryFilter<M> And(Expression<Func<M, bool>> func)
-        {
-            AndHandle(func, CrudTypeEnum.Query);
-            return this;
-        }
-
-        /// <summary>
-        /// 或条件
-        /// </summary>
-        /// <param name="func">格式: it => it.AgentLevel == testQ.AgentLevelXX</param>
-        public QueryFilter<M> Or(Expression<Func<M, bool>> func)
-        {
-            OrHandle(func, CrudTypeEnum.Query);
-            return this;
+            DC.OP = this;
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Yunyong.DataExchange.AdoNet;
+using System;
 using System.Data;
-using Yunyong.DataExchange.AdoNet;
 
 namespace Yunyong.DataExchange.Cache
 {

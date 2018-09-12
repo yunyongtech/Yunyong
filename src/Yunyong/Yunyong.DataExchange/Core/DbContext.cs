@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+﻿
 using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Cache;
 using Yunyong.DataExchange.Common;
@@ -10,6 +6,14 @@ using Yunyong.DataExchange.Enums;
 using Yunyong.DataExchange.ExpressionX;
 using Yunyong.DataExchange.Extensions;
 using Yunyong.DataExchange.Helper;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Yunyong.DataExchange.Core
 {
@@ -54,6 +58,8 @@ namespace Yunyong.DataExchange.Core
 
 
         internal MySqlProvider SqlProvider { get; set; }
+
+        internal Operator OP { get; set; }
 
         internal void AddConditions(DicModel dic)
         {
@@ -121,6 +127,17 @@ namespace Yunyong.DataExchange.Core
             {
                 Conditions.Add(dic);
             }
+        }
+
+        internal string TableAttributeName(Type mType)
+        {
+            var tableName = string.Empty;
+            tableName = AH.GetPropertyValue<TableAttribute>(mType, a => a.Name);
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new Exception("DB Entity 缺少 TableAttribute 指定的表名!");
+            }
+            return tableName;
         }
 
         private async Task SetInsertValue<M>(M m, OptionEnum option, int index)

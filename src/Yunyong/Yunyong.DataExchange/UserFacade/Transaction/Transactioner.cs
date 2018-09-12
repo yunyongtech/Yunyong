@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
 using System.Threading.Tasks;
+using Yunyong.DataExchange.Common;
 using Yunyong.DataExchange.Core;
 
 namespace Yunyong.DataExchange.UserFacade.Transaction
 {
     /// <summary>
     /// </summary>
-    public sealed class Transactioner : Operator
+    public sealed class Transactioner : Operator,IMethodObject
     {
         private Transactioner()
         {

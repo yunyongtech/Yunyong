@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Yunyong.DataExchange.Core;
+﻿using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Enums;
 using Yunyong.DataExchange.Helper;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Yunyong.DataExchange.Common;
 
 namespace Yunyong.DataExchange.UserFacade.Create
 {
-    public class Creater<M>: Operator
+    public class Creater<M>: Operator,IMethodObject
     {
         internal Creater(DbContext dc)
         {
             DC = dc;
+            DC.OP = this;
         }
 
 

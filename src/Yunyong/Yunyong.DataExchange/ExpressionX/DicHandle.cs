@@ -1,7 +1,9 @@
-﻿using System;
-using System.Linq.Expressions;
-using Yunyong.DataExchange.Common;
+﻿using Yunyong.DataExchange.Common;
 using Yunyong.DataExchange.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text;
 
 namespace Yunyong.DataExchange.ExpressionX
 {
@@ -42,11 +44,12 @@ namespace Yunyong.DataExchange.ExpressionX
 
         /*******************************************************************************************************/
 
-        internal static DicModel BinaryCharLengthHandle(string key, string value, Type valType, ExpressionType nodeType,bool isR)
+        internal static DicModel BinaryCharLengthHandle(string key,string alias, string value, Type valType, ExpressionType nodeType,bool isR)
         {
             return new DicModel
             {
                 KeyOne = key,
+                AliasOne=alias,
                 Param = key,
                 ParamRaw = key,
                 Value = value,
@@ -56,20 +59,21 @@ namespace Yunyong.DataExchange.ExpressionX
             };
         }
         // 01
-        internal static DicModel BinaryNormalHandle(string key, string value, Type valType, ExpressionType nodeType,bool isR)
+        internal static DicModel BinaryNormalHandle(string key,string alias, string value, Type valType, ExpressionType nodeType,bool isR)
         {
             return new DicModel
             {
                 KeyOne = key,
-                Param = key,
-                ParamRaw = key,
+                AliasOne = alias,
                 Value = value,
                 ValueType = valType,
+                Param = key,
+                ParamRaw = key,
                 Option = GetOption(nodeType,isR)
             };
         }
         // 01
-        internal static DicModel CallInHandle(string key, string value, Type valType)
+        internal static DicModel CallInHandle(string key,string alias, string value, Type valType)
         {
             if (valType.IsEnum)
             {
@@ -78,6 +82,7 @@ namespace Yunyong.DataExchange.ExpressionX
             return new DicModel
             {
                 KeyOne = key,
+                AliasOne=alias,
                 Param = key,
                 ParamRaw = key,
                 Value = value,
@@ -86,11 +91,12 @@ namespace Yunyong.DataExchange.ExpressionX
             };
         }
         // 01
-        internal static DicModel CallLikeHandle(string key, string value, Type valType)
+        internal static DicModel CallLikeHandle(string key,string alias, string value, Type valType)
         {
             return new DicModel
             {
                 KeyOne = key,
+                AliasOne=alias,
                 Param = key,
                 ParamRaw = key,
                 Value = value,
@@ -112,11 +118,12 @@ namespace Yunyong.DataExchange.ExpressionX
             };
         }
         // 01
-        internal static DicModel MemberBoolHandle(string key, Type valType)
+        internal static DicModel MemberBoolHandle(string key,string alias, Type valType)
         {
             return new DicModel
             {
                 KeyOne = key,
+                AliasOne=alias,
                 Param = key,
                 ParamRaw = key,
                 Value = true.ToString(),

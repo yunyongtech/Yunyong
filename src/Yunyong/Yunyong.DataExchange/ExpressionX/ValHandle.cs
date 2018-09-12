@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Yunyong.DataExchange.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Yunyong.DataExchange.Core;
+using System.Text;
 
 namespace Yunyong.DataExchange.ExpressionX
 {

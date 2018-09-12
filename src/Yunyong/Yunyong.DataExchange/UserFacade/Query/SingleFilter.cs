@@ -1,11 +1,15 @@
-﻿using System.Threading.Tasks;
-using Yunyong.DataExchange.Core;
+﻿using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Enums;
 using Yunyong.DataExchange.Helper;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Yunyong.DataExchange.Common;
 
 namespace Yunyong.DataExchange.UserFacade.Query
 {
-    public class SingleFilter<M>:Operator
+    public class SingleFilter<M>:Operator,IMethodObject
     {
 
         internal SingleFilter(DbContext dc)

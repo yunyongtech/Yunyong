@@ -1,13 +1,15 @@
-﻿using System;
+﻿
+using Yunyong.DataExchange.AdoNet;
+using Yunyong.DataExchange.Common;
+using Yunyong.DataExchange.Core;
+using Yunyong.DataExchange.Enums;
+using Yunyong.DataExchange.Extensions;
+using Yunyong.DataExchange.Helper;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
-using Yunyong.DataExchange.AdoNet;
-using Yunyong.DataExchange.Common;
-using Yunyong.DataExchange.Enums;
-using Yunyong.DataExchange.Extensions;
-using Yunyong.DataExchange.Helper;
 
 namespace Yunyong.DataExchange.Core
 {
@@ -49,7 +51,17 @@ namespace Yunyong.DataExchange.Core
         }
         private string InStrHandle(DicModel dic)
         {
-            var paras = DC.Conditions.Where(it => it.ParamRaw.Equals(dic.ParamRaw, StringComparison.OrdinalIgnoreCase)).ToList();
+            var paras = DC.Conditions.Where(it =>
+            {
+                if (!string.IsNullOrWhiteSpace(it.ParamRaw))
+                {
+                    return it.ParamRaw.Equals(dic.ParamRaw, StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    return false;
+                }
+            }).ToList();
             return $" {string.Join(",", paras.Select(it => $" @{it.Param} "))} ";
         }
 
@@ -57,7 +69,7 @@ namespace Yunyong.DataExchange.Core
         {
             var str = string.Empty;
 
-            if(!DC.Conditions.Any(it=>it.Action== ActionEnum.OrderBy))
+            if (!DC.Conditions.Any(it => it.Action == ActionEnum.OrderBy))
             {
                 str = $" {DC.SC.GetModelProperys(typeof(M)).First().Name} desc ";
             }
@@ -167,13 +179,33 @@ namespace Yunyong.DataExchange.Core
                                 }
                                 break;
                             case OptionEnum.CharLength:
-                                str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}(`{item.KeyOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                switch (item.Crud)
+                                {
+                                    case CrudTypeEnum.Join:
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}({item.AliasOne}.`{item.KeyOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        break;
+                                    case CrudTypeEnum.Delete:
+                                    case CrudTypeEnum.Update:
+                                    case CrudTypeEnum.Query:
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}(`{item.KeyOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        break;
+                                }
                                 break;
                             case OptionEnum.OneEqualOne:
                                 str += $" {item.Action.ToEnumDesc<ActionEnum>()} @{item.Param} ";
                                 break;
                             case OptionEnum.In:
-                                str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.KeyOne} {item.Option.ToEnumDesc<OptionEnum>()}({InStrHandle(item)}) ";
+                                switch (item.Crud)
+                                {
+                                    case CrudTypeEnum.Join:
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.AliasOne}.`{item.KeyOne}` {item.Option.ToEnumDesc<OptionEnum>()}({InStrHandle(item)}) ";
+                                        break;
+                                    case CrudTypeEnum.Delete:
+                                    case CrudTypeEnum.Update:
+                                    case CrudTypeEnum.Query:
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.KeyOne}` {item.Option.ToEnumDesc<OptionEnum>()}({InStrHandle(item)}) ";
+                                        break;
+                                }
                                 break;
                         }
                         break;
@@ -253,12 +285,12 @@ namespace Yunyong.DataExchange.Core
         internal string GetValues()
         {
             var list = new List<string>();
-            for(var i=0;i<DC.Conditions.Max(it=>it.TvpIndex)+1;i++)
+            for (var i = 0; i < DC.Conditions.Max(it => it.TvpIndex) + 1; i++)
             {
                 var values = new List<string>();
-                foreach(var item in DC.Conditions)
-                {                    
-                    if(item.TvpIndex==i)
+                foreach (var item in DC.Conditions)
+                {
+                    if (item.TvpIndex == i)
                     {
                         values.Add($"@{item.Param}");
                     }
@@ -270,23 +302,11 @@ namespace Yunyong.DataExchange.Core
 
         internal string GetTableName<M>(M m)
         {
-            var tableName = string.Empty;
-            tableName = DC.AH.GetPropertyValue<TableAttribute>(m.GetType(), a => a.Name);
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new Exception("DB Entity 缺少 TableAttribute 指定的表名!");
-            }
-            return $"`{tableName}`";
+            return $"`{DC.TableAttributeName(m.GetType())}`";
         }
-        internal string GetTableName (Type mType)
+        internal string GetTableName(Type mType)
         {
-            var tableName = string.Empty;
-            tableName = DC.AH.GetPropertyValue<TableAttribute>(mType, a => a.Name);
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new Exception("DB Entity 缺少 TableAttribute 指定的表名!");
-            }
-            return tableName;
+            return $"`{DC.TableAttributeName(mType)}`";
         }
         internal bool TryGetTableName<M>(out string tableName)
         {

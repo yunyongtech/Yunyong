@@ -1,17 +1,20 @@
-﻿using System;
-using System.Linq.Expressions;
-using Yunyong.DataExchange.Common;
+﻿using Yunyong.DataExchange.Common;
 using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text;
 
 namespace Yunyong.DataExchange.UserFacade.Join
 {
-    public class JoinX: Operator
+    public class JoinX: Operator,IMethodObject
     {
 
         internal JoinX(DbContext dc)
         {
             DC = dc;
+            DC.OP = this;
         }
 
         public OnX InnerJoin<M>(Expression<Func<M>> func)
@@ -34,14 +37,6 @@ namespace Yunyong.DataExchange.UserFacade.Join
                 Crud = CrudTypeEnum.Join
             });
             return new OnX(DC);
-        }
-
-        public QueryFilter Where(Expression<Func<bool>> func)
-        {
-            var field = DC.EH.ExpressionHandle(func, ActionEnum.Where);
-            field.Crud = CrudTypeEnum.Join;
-            DC.AddConditions(field);
-            return new QueryFilter(DC);
         }
 
     }

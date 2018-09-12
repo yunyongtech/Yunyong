@@ -1,8 +1,8 @@
-﻿using System;
-using System.Data;
-using Yunyong.DataExchange.Common;
+﻿using Yunyong.DataExchange.Common;
 using Yunyong.DataExchange.Extensions;
 using Yunyong.DataExchange.X;
+using System;
+using System.Data;
 
 namespace Yunyong.DataExchange.Helper
 {
