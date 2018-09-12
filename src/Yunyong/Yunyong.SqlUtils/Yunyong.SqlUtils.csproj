@@ -4,6 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MySqlConnector" Version="0.42.3" />

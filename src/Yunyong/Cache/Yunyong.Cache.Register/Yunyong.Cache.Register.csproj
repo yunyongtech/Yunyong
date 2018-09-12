@@ -5,6 +5,8 @@
     <Version>1.0.0</Version>
     <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
