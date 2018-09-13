@@ -12,7 +12,10 @@
     <PackageReference Include="AspectCore.Abstractions" Version="0.7.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Yunyong.Core" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Yunyong.Core\Yunyong.Core.csproj" />
   </ItemGroup>
 
 </Project>
