@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
-using Rainbow.Core;
+//using Rainbow.Core;
+using Yunyong.Core;
 
 namespace Yunyong.EventBus
 {
