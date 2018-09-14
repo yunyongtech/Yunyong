@@ -16,7 +16,7 @@ namespace Yunyong.EventBus.EasyNetQ
     /// </summary>
     /// <seealso cref="IEventBus" />
     /// <seealso cref="IDisposable" />
-    public class EventBusEasyNetQ : IEventBus, IDisposable
+    internal class EventBusEasyNetQ : IEventBus, IDisposable
     {
         //private IServiceScope ServiceScope { get; }
         private readonly IMongoDatabase _db = MongoDbContext.GetMongoDB();
@@ -34,10 +34,10 @@ namespace Yunyong.EventBus.EasyNetQ
 
         private ILogger Logger { get; }
         private IBus Bus { get; }
-        public IServiceProvider Provider { get; }
+        private IServiceProvider Provider { get; }
 
         private string Prefix { get; }
-        public bool EnableEventLog { get; }
+        private bool EnableEventLog { get; }
 
         private Dictionary<string, ISubscriptionResult> Subscriptions { get; } =
             new Dictionary<string, ISubscriptionResult>();
