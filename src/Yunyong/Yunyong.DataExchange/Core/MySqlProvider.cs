@@ -72,9 +72,9 @@ namespace Yunyong.DataExchange.Core
 
             if (DC.Conditions.Any(it => it.Action == ActionEnum.OrderBy))
             {
-                str = string.Join(",", DC.Conditions.Where(it => it.Action == ActionEnum.OrderBy).Select(it => $" `{it.KeyOne}` {it.Option.ToEnumDesc<OptionEnum>()} "));
+                str = string.Join(",", DC.Conditions.Where(it => it.Action == ActionEnum.OrderBy).Select(it => $" `{it.ColumnOne}` {it.Option.ToEnumDesc<OptionEnum>()} "));
             }
-            else if (cols.Any(it=> "PRI".Equals(it.KeyType,StringComparison.OrdinalIgnoreCase)))
+            else if (cols.Any(it => "PRI".Equals(it.KeyType, StringComparison.OrdinalIgnoreCase)))
             {
                 str = string.Join(",", cols.Where(it => "PRI".Equals(it.KeyType, StringComparison.OrdinalIgnoreCase)).Select(it => $" `{it.ColumnName}` desc "));
             }
@@ -95,7 +95,7 @@ namespace Yunyong.DataExchange.Core
                 switch (item.Option)
                 {
                     case OptionEnum.Count:
-                        str += $" {item.Option.ToEnumDesc<OptionEnum>()}(`{item.KeyOne}`) ";
+                        str += $" {item.Option.ToEnumDesc<OptionEnum>()}(`{item.ColumnOne}`) ";
                         break;
                 }
             }
@@ -109,7 +109,8 @@ namespace Yunyong.DataExchange.Core
             var list = new List<string>();
             foreach (var dic in DC.Conditions)
             {
-                if (dic.Option != OptionEnum.Column)
+                if (dic.Option != OptionEnum.Column
+                    && dic.Option != OptionEnum.ColumnAs)
                 {
                     continue;
                 }
@@ -120,7 +121,16 @@ namespace Yunyong.DataExchange.Core
                         switch (dic.Crud)
                         {
                             case CrudTypeEnum.Join:
-                                list.Add( $" \t {dic.AliasOne}.`{dic.KeyOne}` ");
+                                switch (dic.Option)
+                                {
+                                    case OptionEnum.Column:
+                                        list.Add($" \t {dic.TableAliasOne}.`{dic.ColumnOne}` ");
+                                        break;
+                                    case OptionEnum.ColumnAs:
+                                        list.Add($" \t {dic.TableAliasOne}.`{dic.ColumnOne}` as {dic.ColumnAlias} ");
+                                        break;
+                                }
+
                                 break;
                         }
                         break;
@@ -162,14 +172,14 @@ namespace Yunyong.DataExchange.Core
                 switch (item.Action)
                 {
                     case ActionEnum.From:
-                        str += $" {item.TableOne} as {item.AliasOne} ";
+                        str += $" {item.TableOne} as {item.TableAliasOne} ";
                         break;
                     case ActionEnum.InnerJoin:
                     case ActionEnum.LeftJoin:
-                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableOne} as {item.AliasOne} ";
+                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableOne} as {item.TableAliasOne} ";
                         break;
                     case ActionEnum.On:
-                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.AliasOne}.`{item.KeyOne}`={item.AliasTwo}.`{item.KeyTwo}` ";
+                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}`={item.AliasTwo}.`{item.KeyTwo}` ";
                         break;
                 }
             }
@@ -206,12 +216,12 @@ namespace Yunyong.DataExchange.Core
                                 switch (item.Crud)
                                 {
                                     case CrudTypeEnum.Join:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.AliasOne}.`{item.KeyOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ";
                                         break;
                                     case CrudTypeEnum.Delete:
                                     case CrudTypeEnum.Update:
                                     case CrudTypeEnum.Query:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.KeyOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ";
                                         break;
                                 }
                                 break;
@@ -219,12 +229,12 @@ namespace Yunyong.DataExchange.Core
                                 switch (item.Crud)
                                 {
                                     case CrudTypeEnum.Join:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.AliasOne}.`{item.KeyOne}`{item.Option.ToEnumDesc<OptionEnum>()}{LikeStrHandle(item)} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}{LikeStrHandle(item)} ";
                                         break;
                                     case CrudTypeEnum.Delete:
                                     case CrudTypeEnum.Update:
                                     case CrudTypeEnum.Query:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.KeyOne}`{item.Option.ToEnumDesc<OptionEnum>()}{LikeStrHandle(item)} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}{LikeStrHandle(item)} ";
                                         break;
                                 }
                                 break;
@@ -232,12 +242,12 @@ namespace Yunyong.DataExchange.Core
                                 switch (item.Crud)
                                 {
                                     case CrudTypeEnum.Join:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}({item.AliasOne}.`{item.KeyOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}({item.TableAliasOne}.`{item.ColumnOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
                                         break;
                                     case CrudTypeEnum.Delete:
                                     case CrudTypeEnum.Update:
                                     case CrudTypeEnum.Query:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}(`{item.KeyOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}(`{item.ColumnOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
                                         break;
                                 }
                                 break;
@@ -248,12 +258,12 @@ namespace Yunyong.DataExchange.Core
                                 switch (item.Crud)
                                 {
                                     case CrudTypeEnum.Join:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.AliasOne}.`{item.KeyOne}` {item.Option.ToEnumDesc<OptionEnum>()}({InStrHandle(item)}) ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}` {item.Option.ToEnumDesc<OptionEnum>()}({InStrHandle(item)}) ";
                                         break;
                                     case CrudTypeEnum.Delete:
                                     case CrudTypeEnum.Update:
                                     case CrudTypeEnum.Query:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.KeyOne}` {item.Option.ToEnumDesc<OptionEnum>()}({InStrHandle(item)}) ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.ColumnOne}` {item.Option.ToEnumDesc<OptionEnum>()}({InStrHandle(item)}) ";
                                         break;
                                 }
                                 break;
@@ -289,10 +299,10 @@ namespace Yunyong.DataExchange.Core
                         {
                             case OptionEnum.ChangeAdd:
                             case OptionEnum.ChangeMinus:
-                                list.Add($" `{item.KeyOne}`=`{item.KeyOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ");
+                                list.Add($" `{item.ColumnOne}`=`{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ");
                                 break;
                             case OptionEnum.Set:
-                                list.Add($" `{item.KeyOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ");
+                                list.Add($" `{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ");
                                 break;
                         }
                         break;
@@ -330,7 +340,7 @@ namespace Yunyong.DataExchange.Core
             {
                 if (item.TvpIndex == 0)
                 {
-                    list.Add($"`{item.KeyOne}`");
+                    list.Add($"`{item.ColumnOne}`");
                 }
             }
             return $" ({ string.Join(",", list)}) ";
@@ -350,7 +360,7 @@ namespace Yunyong.DataExchange.Core
                 }
                 list.Add($"({string.Join(",", values)})");
             }
-            return string.Join(",", list);
+            return string.Join(", \r\n ", list);
         }
 
         internal string GetTableName<M>(M m)
@@ -398,17 +408,17 @@ namespace Yunyong.DataExchange.Core
                 case UiMethodEnum.CreateBatchAsync:
                     list.Add(
                                   $" LOCK TABLES {Table<M>(type)} WRITE; " +
-                                  $" /*!40000 ALTER TABLE {Table<M>(type)} DISABLE KEYS */; " +
-                                  $" insert into  {Table<M>(type)} {GetColumns()} VALUES {GetValues()} ; " +
-                                  $" /*!40000 ALTER TABLE {Table<M>(type)} ENABLE KEYS */; " +
-                                  $" UNLOCK TABLES; "
+                                  $" \r\n /*!40000 ALTER TABLE {Table<M>(type)} DISABLE KEYS */; " +
+                                  $" \r\n insert into  {Table<M>(type)} {GetColumns()} \r\n VALUES {GetValues()} ; " +
+                                  $" \r\n /*!40000 ALTER TABLE {Table<M>(type)} ENABLE KEYS */; " +
+                                  $" \r\n UNLOCK TABLES; "
                                  );
                     break;
                 case UiMethodEnum.DeleteAsync:
                     list.Add($" delete {From()} {Table<M>(type)} {Wheres()} ; ");
                     break;
                 case UiMethodEnum.UpdateAsync:
-                    list.Add($" update {Table<M>(type)} set {DC.SqlProvider.GetUpdates()} {Wheres()} ;");
+                    list.Add($" update {Table<M>(type)} \r\n set {DC.SqlProvider.GetUpdates()} {Wheres()} ;");
                     break;
                 case UiMethodEnum.QueryFirstOrDefaultAsync:
                     list.Add($"select * {From()} {Table<M>(type)} {Wheres()} ; ");
