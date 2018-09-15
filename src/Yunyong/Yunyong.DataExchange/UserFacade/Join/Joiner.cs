@@ -3,14 +3,11 @@ using Yunyong.DataExchange.Core;
 
 namespace Yunyong.DataExchange.UserFacade.Join
 {
-    public class FromX : Operator, IMethodObject
+    public class Joiner : Operator, IMethodObject
     {
-
-        internal FromX(Context dc)
+        internal Joiner(Context dc)
             : base(dc)
         { }
-
-
 
     }
 }
