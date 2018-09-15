@@ -95,11 +95,11 @@ namespace Yunyong.DataExchange.UserFacade.Query
         {
             return await QueryPagingListAsyncHandle<M, M>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
         }
+
         /// <summary>
         /// 单表分页查询
         /// </summary>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
+        /// <param name="option"></param>
         public async Task<PagingList<M>> QueryPagingListAsync(PagingQueryOption option)
         {
             OrderByOptionHandle(option);
@@ -115,12 +115,12 @@ namespace Yunyong.DataExchange.UserFacade.Query
         {
             return await QueryPagingListAsyncHandle<M, VM>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
         }
+
         /// <summary>
         /// 单表分页查询
         /// </summary>
         /// <typeparam name="VM">ViewModel</typeparam>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
+        /// <param name="option"></param>
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(PagingQueryOption option)
         {
             OrderByOptionHandle(option);
