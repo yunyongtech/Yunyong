@@ -7,12 +7,12 @@ using Yunyong.DataExchange.Enums;
 
 namespace Yunyong.DataExchange.UserFacade.Query
 {
-    public class ThenOrderBy<M> : Operator, IMethodObject
+    public class OrderByQ<M> : Operator, IMethodObject
     {
-
-        internal ThenOrderBy(Context dc)
+        internal OrderByQ(Context dc)
             : base(dc)
         { }
+
 
         /// <summary>
         /// 单表多条数据查询
@@ -39,11 +39,11 @@ namespace Yunyong.DataExchange.UserFacade.Query
         {
             return await QueryPagingListAsyncHandle<M, M>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
         }
-
         /// <summary>
         /// 单表分页查询
         /// </summary>
-        /// <param name="option"></param>
+        /// <param name="pageIndex">页码</param>
+        /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<M>> QueryPagingListAsync(PagingQueryOption option)
         {
             OrderByOptionHandle(option);
@@ -59,17 +59,18 @@ namespace Yunyong.DataExchange.UserFacade.Query
         {
             return await QueryPagingListAsyncHandle<M, VM>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
         }
-
         /// <summary>
         /// 单表分页查询
         /// </summary>
         /// <typeparam name="VM">ViewModel</typeparam>
-        /// <param name="option"></param>
+        /// <param name="pageIndex">页码</param>
+        /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(PagingQueryOption option)
         {
             OrderByOptionHandle(option);
             return await QueryPagingListAsyncHandle<M, VM>(option.PageIndex, option.PageSize, UiMethodEnum.QueryPagingListAsync);
         }
+
 
     }
 }

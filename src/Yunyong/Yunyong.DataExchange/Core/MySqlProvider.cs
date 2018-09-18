@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using Yunyong.DataExchange.AdoNet;
@@ -170,7 +169,7 @@ namespace Yunyong.DataExchange.Core
             var tableName = string.Empty;
             if (type != UiMethodEnum.JoinQueryListAsync)
             {
-                TryGetTableName<M>(out tableName);
+                tableName = GetTableName(typeof(M));
             }
 
             return tableName;
@@ -207,6 +206,7 @@ namespace Yunyong.DataExchange.Core
 
         internal string Wheres()
         {
+            /* 可能有问题*/
             //if (!DC.Conditions.Any(it => it.Action == ActionEnum.Where)
             //    && !DC.Conditions.Any(it => it.Action == ActionEnum.And)
             //    && !DC.Conditions.Any(it => it.Action == ActionEnum.Or))
@@ -225,21 +225,16 @@ namespace Yunyong.DataExchange.Core
                     case ActionEnum.Or:
                         switch (item.Option)
                         {
-                            case OptionEnum.Equal:
-                            case OptionEnum.NotEqual:
-                            case OptionEnum.LessThan:
-                            case OptionEnum.LessThanOrEqual:
-                            case OptionEnum.GreaterThan:
-                            case OptionEnum.GreaterThanOrEqual:
+                            case OptionEnum.Compare:
                                 switch (item.Crud)
                                 {
                                     case CrudTypeEnum.Join:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}`{item.Compare.ToEnumDesc<CompareConditionEnum>()}@{item.Param} ";
                                         break;
                                     case CrudTypeEnum.Delete:
                                     case CrudTypeEnum.Update:
                                     case CrudTypeEnum.Query:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.ColumnOne}`{item.Option.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} `{item.ColumnOne}`{item.Compare.ToEnumDesc<CompareConditionEnum>()}@{item.Param} ";
                                         break;
                                 }
                                 break;
@@ -260,12 +255,12 @@ namespace Yunyong.DataExchange.Core
                                 switch (item.Crud)
                                 {
                                     case CrudTypeEnum.Join:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}({item.TableAliasOne}.`{item.ColumnOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}({item.TableAliasOne}.`{item.ColumnOne}`){item.Compare.ToEnumDesc<CompareConditionEnum>()}@{item.Param} ";
                                         break;
                                     case CrudTypeEnum.Delete:
                                     case CrudTypeEnum.Update:
                                     case CrudTypeEnum.Query:
-                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}(`{item.ColumnOne}`){item.FuncSupplement.ToEnumDesc<OptionEnum>()}@{item.Param} ";
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}(`{item.ColumnOne}`){item.Compare.ToEnumDesc<CompareConditionEnum>()}@{item.Param} ";
                                         break;
                                 }
                                 break;
@@ -394,24 +389,24 @@ namespace Yunyong.DataExchange.Core
             return string.Join(", \r\n ", list);
         }
 
-        internal string GetTableName<M>(M m)
-        {
-            return $"`{DC.TableAttributeName(m.GetType())}`";
-        }
+        //internal string GetTableName<M>(M m)
+        //{
+        //    return $"`{DC.TableAttributeName(m.GetType())}`";
+        //}
         internal string GetTableName(Type mType)
         {
             return $"`{DC.TableAttributeName(mType)}`";
         }
-        internal bool TryGetTableName<M>(out string tableName)
-        {
-            tableName = DC.AH.GetPropertyValue<TableAttribute>(typeof(M), a => a.Name);
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new Exception("DB Entity 缺少 TableAttribute 指定的表名!");
-            }
-            tableName = $"`{tableName}`";
-            return true;
-        }
+        //internal bool TryGetTableName<M>(out string tableName)
+        //{
+        //    tableName = DC.AH.GetAttributePropVal<TableAttribute>(typeof(M), a => a.Name);
+        //    if (string.IsNullOrWhiteSpace(tableName))
+        //    {
+        //        throw new Exception("DB Entity 缺少 TableAttribute 指定的表名!");
+        //    }
+        //    tableName = $"`{tableName}`";
+        //    return true;
+        //}
 
         internal OptionEnum GetChangeOption(ChangeEnum change)
         {

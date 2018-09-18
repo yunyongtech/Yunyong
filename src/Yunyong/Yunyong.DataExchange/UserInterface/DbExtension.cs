@@ -1,12 +1,12 @@
+using System;
+using System.Data;
 using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.UserFacade.Create;
 using Yunyong.DataExchange.UserFacade.Delete;
 using Yunyong.DataExchange.UserFacade.Join;
 using Yunyong.DataExchange.UserFacade.Query;
-using Yunyong.DataExchange.UserFacade.Update;
-using System;
-using System.Data;
 using Yunyong.DataExchange.UserFacade.Transaction;
+using Yunyong.DataExchange.UserFacade.Update;
 
 namespace Yunyong.DataExchange
 {
@@ -34,9 +34,9 @@ namespace Yunyong.DataExchange
         /// 修改数据 方法簇
         /// </summary>
         /// <typeparam name="M">M:与DB Table 一 一对应</typeparam>
-        public static Setter<M> Updater<M>(this IDbConnection connection)
+        public static Updater<M> Updater<M>(this IDbConnection connection)
         {
-            return new Setter<M>(new DbContext<M>(connection));
+            return new Updater<M>(new DbContext<M>(connection));
         }
 
         /// <summary>
