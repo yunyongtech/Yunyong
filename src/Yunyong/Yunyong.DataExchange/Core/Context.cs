@@ -27,6 +27,7 @@ namespace Yunyong.DataExchange.Core
             EH = new ExpressionHandleX(this);
             SC = StaticCache.Instance;
             PPH = ParameterPartHandle.Instance;
+            BDH = BatchDataHelper.Instance;
             SqlProvider = new MySqlProvider(this);
         }
 
@@ -57,6 +58,8 @@ namespace Yunyong.DataExchange.Core
         internal ParameterPartHandle PPH { get; private set; }
 
         internal ValHandle VH { get; private set; }
+
+        internal BatchDataHelper BDH { get; private set; }
 
         internal List<DicModel> Conditions { get; private set; }
 
@@ -136,6 +139,11 @@ namespace Yunyong.DataExchange.Core
             }
         }
 
+        internal void ResetConditions()
+        {
+            Conditions = new List<DicModel>();
+        }
+
         internal string TableAttributeName(Type mType)
         {
             var tableName = string.Empty;
@@ -149,15 +157,23 @@ namespace Yunyong.DataExchange.Core
 
         internal void SetMTCache<M>()
         {
+            //
             var type = typeof(M);
+            var key = SC.GetKey(type.FullName, Conn.Database);
+
+            //
             var table = SqlProvider.GetTableName(type);
             SC.SetModelTable(SC.GetKey(type.FullName, Conn.Database), table);
+            SC.SetModelType(key, type);
+            SC.SetModelProperys(type, this);
+            (SC.SetModelColumnInfos(key, this)).GetAwaiter().GetResult();
         }
 
-        private async Task SetInsertValue<M>(M m, OptionEnum option, int index)
+        private void SetInsertValue<M>(M m, OptionEnum option, int index)
         {
-            var props = SC.GetModelProperys(m.GetType(), this);
-            var columns = (SC.GetColumnInfos(SC.GetKey(typeof(M).FullName, Conn.Database), this)).GetAwaiter().GetResult();
+            var key = SC.GetKey(m.GetType().FullName, Conn.Database);
+            var props = SC.GetModelProperys(key);
+            var columns = SC.GetColumnInfos(key);
 
             foreach (var prop in props)
             {
@@ -176,16 +192,16 @@ namespace Yunyong.DataExchange.Core
                 });
             }
         }
-        internal async Task GetProperties<M>(M m)
+        internal void GetProperties<M>(M m)
         {
-            await SetInsertValue(m, OptionEnum.Insert, 0);
+            SetInsertValue(m, OptionEnum.Insert, 0);
         }
-        internal async Task GetProperties<M>(IEnumerable<M> mList)
+        internal void GetProperties<M>(IEnumerable<M> mList)
         {
             var i = 0;
             foreach (var m in mList)
             {
-                await SetInsertValue(m, OptionEnum.InsertTVP, i);
+                SetInsertValue(m, OptionEnum.InsertTVP, i);
                 i++;
             }
         }
