@@ -6,6 +6,7 @@
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
