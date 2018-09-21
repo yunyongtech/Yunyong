@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using Yunyong.DataExchange.AdoNet;
@@ -65,7 +66,7 @@ namespace Yunyong.DataExchange.Core
         private string GetOrderByPart<M>()
         {
             var str = string.Empty;
-            var cols = DC.SC.GetColumnInfos(DC.SC.GetKey(typeof(M).FullName,DC.Conn.Database));
+            var cols = DC.SC.GetColumnInfos(DC.SC.GetKey(typeof(M).FullName, DC.Conn.Database));
 
             if (DC.Conditions.Any(it => it.Action == ActionEnum.OrderBy))
             {
@@ -77,31 +78,41 @@ namespace Yunyong.DataExchange.Core
             }
             else
             {
-                str = $" `{DC.SC.GetModelProperys(DC.SC.GetKey( typeof(M).FullName, DC.Conn.Database)).First().Name}` desc ";
+                str = $" `{DC.SC.GetModelProperys(DC.SC.GetKey(typeof(M).FullName, DC.Conn.Database)).First().Name}` desc ";
             }
+
+            str = $" \r\n order by {str}";
 
             return str;
         }
         private string GetOrderByPart()
         {
             var str = string.Empty;
-            var key = DC.SC.GetKey(DC.Conditions.First(it => !string.IsNullOrWhiteSpace(it.ClassFullName)).ClassFullName, DC.Conn.Database);
+            var dic = DC.Conditions.First(it => !string.IsNullOrWhiteSpace(it.ClassFullName));
+            var key = DC.SC.GetKey(dic.ClassFullName, DC.Conn.Database);
             var cols = DC.SC.GetColumnInfos(key);
 
             if (DC.Conditions.Any(it => it.Action == ActionEnum.OrderBy))
             {
-                str = string.Join(",", DC.Conditions.Where(it => it.Action == ActionEnum.OrderBy).Select(it => $" `{it.ColumnOne}` {it.Option.ToEnumDesc<OptionEnum>()} "));
+                str = string.Join(",", DC.Conditions.Where(it => it.Action == ActionEnum.OrderBy).Select(it => $" {dic.TableAliasOne}.`{it.ColumnOne}` {it.Option.ToEnumDesc<OptionEnum>()} "));
             }
             else if (cols.Any(it => "PRI".Equals(it.KeyType, StringComparison.OrdinalIgnoreCase)))
             {
-                str = string.Join(",", cols.Where(it => "PRI".Equals(it.KeyType, StringComparison.OrdinalIgnoreCase)).Select(it => $" `{it.ColumnName}` desc "));
+                str = string.Join(",", cols.Where(it => "PRI".Equals(it.KeyType, StringComparison.OrdinalIgnoreCase)).Select(it => $" {dic.TableAliasOne}.`{it.ColumnName}` desc "));
             }
             else
             {
-                str = $" `{DC.SC.GetModelProperys(key).First().Name}` desc ";
+                str = $" {dic.TableAliasOne}.`{DC.SC.GetModelProperys(key).First().Name}` desc ";
             }
 
+            str = $" \r\n order by {str}";
+
             return str;
+        }
+
+        private string Limit(int? pageIndex, int? pageSize)
+        {
+            return $" \r\n limit {(pageIndex - 1) * pageSize},{pageIndex * pageSize}";
         }
 
         internal string GetSingleValuePart()
@@ -125,6 +136,7 @@ namespace Yunyong.DataExchange.Core
         {
             var str = string.Empty;
             var list = new List<string>();
+
             foreach (var dic in DC.Conditions)
             {
                 if (dic.Option != OptionEnum.Column
@@ -150,12 +162,30 @@ namespace Yunyong.DataExchange.Core
                                 }
 
                                 break;
+                            case CrudTypeEnum.Query:
+                                switch (dic.Option)
+                                {
+                                    case OptionEnum.Column:
+                                        list.Add($" \t `{dic.ColumnOne}` ");
+                                        break;
+                                    case OptionEnum.ColumnAs:
+                                        list.Add($" \t `{dic.ColumnOne}` as {dic.ColumnAlias} ");
+                                        break;
+                                }
+                                break;
                         }
                         break;
                 }
             }
 
-            str = string.Join(",\r\n", list);
+            if (list.Count > 0)
+            {
+                str = string.Join(",\r\n", list);
+            }
+            else
+            {
+                str = "*";
+            }
             return str;
         }
 
@@ -170,7 +200,9 @@ namespace Yunyong.DataExchange.Core
             var tableName = string.Empty;
             if (type != UiMethodEnum.JoinQueryListAsync)
             {
-                tableName = GetTableName(typeof(M));
+                //tableName = GetTableName(typeof(M));
+                var key = DC.SC.GetKey(typeof(M).FullName, DC.Conn.Database);
+                tableName = DC.SC.GetModelTableName(key);
             }
 
             return tableName;
@@ -287,9 +319,9 @@ namespace Yunyong.DataExchange.Core
             }
 
             if (!string.IsNullOrWhiteSpace(str)
-                && DC.Conditions.All(it=>it.Action!= ActionEnum.Where))
+                && DC.Conditions.All(it => it.Action != ActionEnum.Where))
             {
-                var aIdx = str.IndexOf(" and ",StringComparison.Ordinal);
+                var aIdx = str.IndexOf(" and ", StringComparison.Ordinal);
                 var oIdx = str.IndexOf(" or ", StringComparison.Ordinal);
                 if (aIdx < oIdx)
                 {
@@ -300,7 +332,7 @@ namespace Yunyong.DataExchange.Core
                     str = $" {ActionEnum.Where.ToEnumDesc<ActionEnum>()} false {str} ";
                 }
             }
-            
+
             return str;
         }
 
@@ -393,7 +425,14 @@ namespace Yunyong.DataExchange.Core
 
         internal string GetTableName(Type mType)
         {
-            return $"`{DC.TableAttributeName(mType)}`";
+            var tableName = string.Empty;
+            tableName = DC.AH.GetAttributePropVal<TableAttribute>(mType, a => a.Name);
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new Exception("DB Entity 缺少 TableAttribute 指定的表名!");
+            }
+            return $"`{tableName}`";
+            //return $"`{DC.TableAttributeName(mType)}`";
         }
 
         internal OptionEnum GetChangeOption(ChangeEnum change)
@@ -435,13 +474,13 @@ namespace Yunyong.DataExchange.Core
                     list.Add($" update {Table<M>(type)} \r\n set {DC.SqlProvider.GetUpdates()} {Wheres()} ;");
                     break;
                 case UiMethodEnum.QueryFirstOrDefaultAsync:
-                    list.Add($"select * {From()} {Table<M>(type)} {Wheres()} ; ");
+                    list.Add($"select {Columns()} {From()} {Table<M>(type)} {Wheres()} ; ");
                     break;
                 case UiMethodEnum.JoinQueryFirstOrDefaultAsync:
                     list.Add($" select {Columns()} {From()} {Joins()} {Wheres()} ; ");
                     break;
                 case UiMethodEnum.QueryListAsync:
-                    list.Add($"select * {From()} {Table<M>(type)} {Wheres()} ; ");
+                    list.Add($"select {Columns()} {From()} {Table<M>(type)} {Wheres()} ; ");
                     break;
                 case UiMethodEnum.JoinQueryListAsync:
                     list.Add($" select {Columns()} {From()} {Joins()} {Wheres()} ; ");
@@ -449,16 +488,16 @@ namespace Yunyong.DataExchange.Core
                 case UiMethodEnum.QueryPagingListAsync:
                     var wherePart8 = Wheres();
                     list.Add($"select count(*) {From()} {Table<M>(type)} {wherePart8} ; ");
-                    list.Add($"select * {From()} {Table<M>(type)} {wherePart8} order by {GetOrderByPart<M>()} limit {(pageIndex - 1) * pageSize},{pageIndex * pageSize}  ; ");
+                    list.Add($"select {Columns()} {From()} {Table<M>(type)} {wherePart8} {GetOrderByPart<M>()} {Limit(pageIndex,pageSize)}  ; ");
                     break;
                 case UiMethodEnum.JoinQueryPagingListAsync:
                     var wherePart9 = Wheres();
                     list.Add($"select count(*) {From()} {Joins()} {wherePart9} ; ");
-                    list.Add($"select {Columns()} {From()} {Joins()} {wherePart9} order by {GetOrderByPart()} limit {(pageIndex - 1) * pageSize},{pageIndex * pageSize}  ; ");
+                    list.Add($"select {Columns()} {From()} {Joins()} {wherePart9} {GetOrderByPart()} {Limit(pageIndex,pageSize)}  ; ");
                     break;
                 case UiMethodEnum.QueryAllPagingListAsync:
                     list.Add($"select count(*) {From()} {Table<M>(type)} ; ");
-                    list.Add($"select * {From()} {Table<M>(type)} order by {GetOrderByPart<M>()} limit {(pageIndex - 1) * pageSize},{pageIndex * pageSize}  ; ");
+                    list.Add($"select * {From()} {Table<M>(type)} {GetOrderByPart<M>()} {Limit(pageIndex,pageSize)}  ; ");
                     break;
                 case UiMethodEnum.QuerySingleValueAsync:
                     list.Add($" select {GetSingleValuePart()} {From()} {Table<M>(type)} {Wheres()} ; ");
