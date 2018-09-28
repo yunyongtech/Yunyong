@@ -2,7 +2,7 @@
 
 namespace Yunyong.DataExchange
 {
-    public enum CompareConditionEnum
+    public enum CompareEnum
     {
         /// <summary>
         /// " "
@@ -17,7 +17,7 @@ namespace Yunyong.DataExchange
         Equal,
 
         /// <summary>
-        /// <>
+        /// !=
         /// </summary>
         [Description("<>")]
         NotEqual,

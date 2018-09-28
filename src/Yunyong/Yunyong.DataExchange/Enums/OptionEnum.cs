@@ -53,42 +53,6 @@ namespace Yunyong.DataExchange.Enums
         [Description("")]
         Compare,
 
-        ///// <summary>
-        ///// =
-        ///// </summary>
-        //[Description("=")]
-        //Equal,
-
-        ///// <summary>
-        ///// <>
-        ///// </summary>
-        //[Description("<>")]
-        //NotEqual,
-
-        ///// <summary>
-        ///// &lt;
-        ///// </summary>
-        //[Description("<")]
-        //LessThan,
-
-        ///// <summary>
-        ///// &lt;=
-        ///// </summary>
-        //[Description("<=")]
-        //LessThanOrEqual,
-
-        ///// <summary>
-        ///// &gt;
-        ///// </summary>
-        //[Description(">")]
-        //GreaterThan,
-
-        ///// <summary>
-        ///// &gt;=
-        ///// </summary>
-        //[Description(">=")]
-        //GreaterThanOrEqual,
-
         /// <summary>
         /// " like "
         /// </summary>
@@ -119,6 +83,18 @@ namespace Yunyong.DataExchange.Enums
         /// </summary>
         [Description("")]
         OneEqualOne,
+
+        /// <summary>
+        /// " is null "
+        /// </summary>
+        [Description(" is null ")]
+        IsNull,
+
+        /// <summary>
+        /// " is not null "
+        /// </summary>
+        [Description(" is not null ")]
+        IsNotNull,
 
         /// <summary>
         /// " asc "

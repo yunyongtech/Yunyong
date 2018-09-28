@@ -62,7 +62,7 @@ namespace Yunyong.DataExchange.ExpressionX
         }
 
         // -01-02- 
-        private (string key, string alias, Type valType) GetKey(Expression bodyL, OptionEnum option)
+        private (string key, string alias, Type valType,string classFullName) GetKey(Expression bodyL, OptionEnum option)
         {
             if (bodyL.NodeType == ExpressionType.Convert)
             {
@@ -97,16 +97,16 @@ namespace Yunyong.DataExchange.ExpressionX
                     .GetOrAdd($"{paramType.FullName}:{info.Module.GetHashCode()}", moduleKey => new ConcurrentDictionary<Int32, String>())
                     .GetOrAdd(info.MetadataToken, innnerKey =>
                     {
-                        if (info.IsDefined(typeof(ColumnXAttribute), false))
+                        if (info.IsDefined(typeof(TableColumnAttribute), false))
                         {
-                            var attr = (ColumnXAttribute)info.GetCustomAttributes(typeof(ColumnXAttribute), false)[0];
+                            var attr = (TableColumnAttribute)info.GetCustomAttributes(typeof(TableColumnAttribute), false)[0];
                             return attr.Name;
                         }
                         return info.Name;
                     });
 
                 //
-                return (field, alias, type);
+                return (field, alias, type,paramType.FullName);
             }
             else if (bodyL.NodeType == ExpressionType.Call)
             {
@@ -118,7 +118,7 @@ namespace Yunyong.DataExchange.ExpressionX
                 }
             }
 
-            return (default(string), default(string), default(Type));
+            return (default(string), default(string), default(Type),default(string));
         }
 
         // 01
@@ -270,7 +270,9 @@ namespace Yunyong.DataExchange.ExpressionX
                                 val = $"%{DC.VH.GetCallVal(mcExpr)}";
                                 break;
                         }
-                        return DicHandle.CallLikeHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+                        var dic = DicHandle.CallLikeHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+                        dic.ClassFullName = keyTuple.classFullName;
+                        return dic;
                     }
                 }
             }
@@ -282,10 +284,12 @@ namespace Yunyong.DataExchange.ExpressionX
         {
             var keyTuple = GetKey(expr, OptionEnum.In);
             var val = HandMember(memExpr);
-            return DicHandle.CallInHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+            var dic = DicHandle.CallInHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+            dic.ClassFullName = keyTuple.classFullName;
+            return dic;
         }
 
-        private DicModel NewCollectionIn(ExpressionType nodeType,Expression keyExpr,Expression valExpr)
+        private DicModel NewCollectionIn(ExpressionType nodeType, Expression keyExpr, Expression valExpr)
         {
             if (nodeType == ExpressionType.NewArrayInit)
             {
@@ -298,7 +302,9 @@ namespace Yunyong.DataExchange.ExpressionX
                 }
 
                 var val = string.Join(",", vals);
-                return DicHandle.CallInHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+                var dic = DicHandle.CallInHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+                dic.ClassFullName = keyTuple.classFullName;
+                return dic;
             }
             else if (nodeType == ExpressionType.ListInit)
             {
@@ -312,7 +318,9 @@ namespace Yunyong.DataExchange.ExpressionX
                 }
 
                 var val = string.Join(",", vals);
-                return DicHandle.CallInHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+                var dic = DicHandle.CallInHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType);
+                dic.ClassFullName = keyTuple.classFullName;
+                return dic;
             }
 
             return null;
@@ -323,18 +331,52 @@ namespace Yunyong.DataExchange.ExpressionX
         private DicModel HandConditionBinary(BinaryExpression binExpr, List<string> pres)
         {
             var binTuple = HandBinExpr(pres, binExpr);
-            var val = HandBinary(binTuple.right);
-            var leftStr = binTuple.left.ToString();
-            if (leftStr.Contains(".Length")
-                && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
+            if ((binTuple.node == ExpressionType.Equal || binTuple.node == ExpressionType.NotEqual)
+                && binTuple.right.NodeType == ExpressionType.Constant
+                && (binTuple.right as ConstantExpression).Value == null)
             {
-                var keyTuple = GetKey(binTuple.left, OptionEnum.CharLength);
-                return DicHandle.BinaryCharLengthHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType, binTuple.node, binTuple.isR);
+                var optionx = OptionEnum.None;
+                var tuple = GetKey(binTuple.left, optionx);
+                if(binTuple.node== ExpressionType.Equal)
+                {
+                    optionx = OptionEnum.IsNull;
+                }
+                else
+                {
+                    optionx = OptionEnum.IsNotNull;
+                }
+                return new DicModel
+                {
+                    ClassFullName=tuple.classFullName,
+                    ColumnOne = tuple.key,
+                    TableAliasOne = tuple.alias,
+                    Param = tuple.key,
+                    ParamRaw = tuple.key,
+                    CsValue = null,
+                    ValueType = tuple.valType,
+                    Option = optionx,
+                    Compare = CompareEnum.None
+                };
             }
             else
             {
-                var keyTuple = GetKey(binTuple.left, OptionEnum.Compare /*DicHandle.GetOption(binTuple.node, binTuple.isR)*/);
-                return DicHandle.BinaryNormalHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType, binTuple.node, binTuple.isR);
+                var val = HandBinary(binTuple.right);
+                var leftStr = binTuple.left.ToString();
+                if (leftStr.Contains(".Length")
+                    && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
+                {
+                    var keyTuple = GetKey(binTuple.left, OptionEnum.CharLength);
+                    var dic = DicHandle.BinaryCharLengthHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType, binTuple.node, binTuple.isR);
+                    dic.ClassFullName = keyTuple.classFullName;
+                    return dic;
+                }
+                else
+                {
+                    var keyTuple = GetKey(binTuple.left, OptionEnum.Compare /*DicHandle.GetOption(binTuple.node, binTuple.isR)*/);
+                    var dic = DicHandle.BinaryNormalHandle(keyTuple.key, keyTuple.alias, val, keyTuple.valType, binTuple.node, binTuple.isR);
+                    dic.ClassFullName = keyTuple.classFullName;
+                    return dic;
+                }
             }
         }
 
@@ -410,20 +452,18 @@ namespace Yunyong.DataExchange.ExpressionX
             var tuple = GetMemTuple(memExpr);
             if (tuple.valType == typeof(bool))
             {
-                return DicHandle.MemberBoolHandle(tuple.key, tuple.alias, tuple.valType);
+                var dic = DicHandle.MemberBoolHandle(tuple.key, tuple.alias, tuple.valType);
+                dic.ClassFullName = tuple.classFullName;
+                return dic;
             }
 
             return null;
         }
 
-        private (string key, string alias, Type valType) GetMemTuple(MemberExpression memExpr)
+        private (string key, string alias, Type valType,string classFullName) GetMemTuple(MemberExpression memExpr)
         {
-            //var memProp = memExpr.Member as PropertyInfo;
-            //var valType = memProp.PropertyType;
-            //var key = memProp.Name;
-            //var alias = GetAlias(memExpr);
             var tuple = GetKey(memExpr, OptionEnum.None);
-            return (tuple.key, tuple.alias, tuple.valType);
+            return (tuple.key, tuple.alias, tuple.valType,tuple.classFullName);
         }
 
         /********************************************************************************************************************/
@@ -431,7 +471,7 @@ namespace Yunyong.DataExchange.ExpressionX
         private List<DicModel> HandSelectMemberInit(MemberInitExpression miExpr)
         {
             var result = new List<DicModel>();
-            
+
             foreach (var mb in miExpr.Bindings)
             {
                 var mbEx = mb as MemberAssignment;
@@ -440,6 +480,7 @@ namespace Yunyong.DataExchange.ExpressionX
                 var colAlias = mbEx.Member.Name;
                 result.Add(new DicModel
                 {
+                    ClassFullName=tuple.classFullName,
                     TableAliasOne = tuple.alias,
                     ColumnOne = tuple.key,
                     ColumnAlias = colAlias
@@ -458,6 +499,7 @@ namespace Yunyong.DataExchange.ExpressionX
             var tuple2 = GetKey(binExpr.Right, option);
             return new DicModel
             {
+                ClassFullName=tuple1.classFullName,
                 ColumnOne = tuple1.key,
                 TableAliasOne = tuple1.alias,
                 KeyTwo = tuple2.key,
@@ -489,6 +531,7 @@ namespace Yunyong.DataExchange.ExpressionX
                     {
                         result.Add(new DicModel
                         {
+                            ClassFullName=keyTuple.classFullName,
                             ColumnOne = key
                         });
                     }
@@ -606,6 +649,7 @@ namespace Yunyong.DataExchange.ExpressionX
                         var colAlias = mems[i].Name;
                         result.Add(new DicModel
                         {
+                            ClassFullName=tuple.classFullName,
                             TableAliasOne = tuple.alias,
                             ColumnOne = tuple.key,
                             ColumnAlias = colAlias
