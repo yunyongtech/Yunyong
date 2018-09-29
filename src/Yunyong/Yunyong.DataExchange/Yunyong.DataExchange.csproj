@@ -7,7 +7,7 @@
     <Product>MyDAL</Product>
     <Description>The fastest and best ORM lite on .NET Core for MySQL ! 
         -- 友好, 轻量, 极致性能, 无任何第三方依赖, 持续演进~~</Description>
-    <Copyright>2018 myself</Copyright>
+    <Copyright>2018</Copyright>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://www.cnblogs.com/Meng-NET/p/8963476.html</PackageProjectUrl>
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
