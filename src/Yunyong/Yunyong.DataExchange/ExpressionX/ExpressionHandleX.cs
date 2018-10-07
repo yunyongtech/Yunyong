@@ -168,12 +168,12 @@ namespace Yunyong.DataExchange.ExpressionX
             }
         }
         // 02
-        private string HandMember(MemberExpression binRight)
+        private object HandMember(MemberExpression binRight, string funcStr)
         {
-            var result = default(string);
+            var result = default(object);
             if (binRight.NodeType == ExpressionType.MemberAccess)
             {
-                result = DC.VH.GetMemExprVal(binRight);
+                result = DC.VH.GetMemExprVal(binRight,funcStr);
             }
             else
             {
@@ -181,37 +181,11 @@ namespace Yunyong.DataExchange.ExpressionX
             }
             return result;
         }
-        // 02
-        private string HandConvert(Expression binRight)
-        {
-            var result = default(string);
-            if (binRight.NodeType == ExpressionType.Convert)
-            {
-                var expr = binRight as UnaryExpression;
-                if (expr.Operand.NodeType == ExpressionType.Convert)
-                {
-                    var exprExpr = expr.Operand as UnaryExpression;
-                    var memExpr = exprExpr.Operand as MemberExpression;
-                    var memCon = memExpr.Expression as ConstantExpression;
-                    var memObj = memCon.Value;
-                    var memFiled = memExpr.Member as FieldInfo;
-                    result = memFiled.GetValue(memObj).ToString();
-                }
-                else if (expr.Operand.NodeType == ExpressionType.MemberAccess)
-                {
-                    result = DC.VH.GetMemExprVal(expr.Operand as MemberExpression);
-                }
-            }
-            else
-            {
-                throw new Exception();
-            }
-            return result;
-        }
+
         // 01
-        private string HandBinary(Expression binRight)
+        private object HandBinary(Expression binRight, string funcStr)
         {
-            var val = string.Empty;
+            var val = default(object);
 
             //
             switch (binRight.NodeType)
@@ -222,13 +196,13 @@ namespace Yunyong.DataExchange.ExpressionX
                     break;
                 case ExpressionType.Call:
                     var rightExpr = binRight as MethodCallExpression;
-                    val = DC.VH.GetCallVal(rightExpr);
+                    val = DC.VH.GetCallVal(rightExpr,funcStr);
                     break;
                 case ExpressionType.MemberAccess:
-                    val = HandMember(binRight as MemberExpression);
+                    val = HandMember(binRight as MemberExpression,funcStr);
                     break;
                 case ExpressionType.Convert:
-                    val = HandConvert(binRight);
+                    val = DC.VH.GetConvertVal(binRight,funcStr);
                     break;
                 default:
                     throw new Exception();
@@ -240,7 +214,7 @@ namespace Yunyong.DataExchange.ExpressionX
 
         /********************************************************************************************************************/
 
-        private DicModelUI StringLike(MethodCallExpression mcExpr, StringLikeEnum type,ActionEnum action,CrudTypeEnum crud)
+        private DicModelUI StringLike(MethodCallExpression mcExpr, StringLikeEnum type,ActionEnum action,CrudTypeEnum crud, string funcStr)
         {
             if (mcExpr.Object == null)
             {
@@ -257,22 +231,20 @@ namespace Yunyong.DataExchange.ExpressionX
                     if (memType == typeof(string))
                     {
                         var keyTuple = GetKey(memO, OptionEnum.Like);
-                        var val = string.Empty;
+                        var val = default(object);
                         switch (type)
                         {
                             case StringLikeEnum.Contains:
-                                val = DC.VH.GetCallVal(mcExpr);
+                                val = DC.VH.GetCallVal(mcExpr,funcStr);
                                 break;
                             case StringLikeEnum.StartsWith:
-                                val = $"{DC.VH.GetCallVal(mcExpr)}%";
+                                val = $"{DC.VH.GetCallVal(mcExpr,funcStr)}%";
                                 break;
                             case StringLikeEnum.EndsWith:
-                                val = $"%{DC.VH.GetCallVal(mcExpr)}";
+                                val = $"%{DC.VH.GetCallVal(mcExpr,funcStr)}";
                                 break;
                         }
                         return DicHandle.CallLikeHandle(crud,action,keyTuple.classFullName,keyTuple.key, keyTuple.alias, val, keyTuple.valType);
-                        //dic.ClassFullName = keyTuple.classFullName;
-                        //return dic;
                     }
                 }
             }
@@ -280,25 +252,30 @@ namespace Yunyong.DataExchange.ExpressionX
             return null;
         }
 
-        private DicModelUI CollectionIn(Expression expr, MemberExpression memExpr,ActionEnum action,CrudTypeEnum crud)
+        private DicModelUI CollectionIn(Expression expr, MemberExpression memExpr,ActionEnum action,CrudTypeEnum crud, string funcStr)
         {
             var keyTuple = GetKey(expr, OptionEnum.In);
-            var val = HandMember(memExpr);
+            var val = HandMember(memExpr,funcStr);
             return DicHandle.CallInHandle(crud,action,keyTuple.classFullName, keyTuple.key, keyTuple.alias, val, keyTuple.valType);
-            //dic.ClassFullName = keyTuple.classFullName;
-            //return dic;
         }
 
-        private DicModelUI NewCollectionIn(ExpressionType nodeType, Expression keyExpr, Expression valExpr,ActionEnum action,CrudTypeEnum crud)
+        private DicModelUI NewCollectionIn(ExpressionType nodeType, Expression keyExpr, Expression valExpr,ActionEnum action,CrudTypeEnum crud, string funcStr)
         {
             if (nodeType == ExpressionType.NewArrayInit)
             {
                 var naExpr = valExpr as NewArrayExpression;
                 var keyTuple = GetKey(keyExpr, OptionEnum.In);
-                var vals = new List<string>();
+                var vals = new List<object>();
                 foreach (var exp in naExpr.Expressions)
                 {
-                    vals.Add(DC.VH.GetConstantVal(exp as ConstantExpression, keyTuple.valType));
+                    if (exp.NodeType == ExpressionType.Constant)
+                    {
+                        vals.Add(DC.VH.GetConstantVal(exp as ConstantExpression, keyTuple.valType));
+                    }
+                    else if(exp.NodeType==ExpressionType.Convert)
+                    {
+                        vals.Add(DC.VH.GetConvertVal(exp, funcStr));
+                    }
                 }
 
                 var val = string.Join(",", vals);
@@ -310,17 +287,22 @@ namespace Yunyong.DataExchange.ExpressionX
             {
                 var liExpr = valExpr as ListInitExpression;
                 var keyTuple = GetKey(keyExpr, OptionEnum.In);
-                var vals = new List<string>();
+                var vals = new List<object>();
                 foreach (var ini in liExpr.Initializers)
                 {
                     var arg = ini.Arguments[0];
-                    vals.Add(DC.VH.GetConstantVal(ini.Arguments[0] as ConstantExpression, keyTuple.valType));
+                    if (arg.NodeType == ExpressionType.Constant)
+                    {
+                        vals.Add(DC.VH.GetConstantVal(arg as ConstantExpression, keyTuple.valType));
+                    }
+                    else if (arg.NodeType== ExpressionType.Convert)
+                    {
+                        vals.Add(DC.VH.GetConvertVal(arg, funcStr));
+                    }
                 }
 
                 var val = string.Join(",", vals);
                 return DicHandle.CallInHandle(crud,action, keyTuple.classFullName, keyTuple.key, keyTuple.alias, val, keyTuple.valType);
-                //dic.ClassFullName = keyTuple.classFullName;
-                //return dic;
             }
 
             return null;
@@ -328,7 +310,7 @@ namespace Yunyong.DataExchange.ExpressionX
 
         /********************************************************************************************************************/
 
-        private DicModelUI HandConditionBinary(CrudTypeEnum crud, ActionEnum action, BinaryExpression binExpr, List<string> pres)
+        private DicModelUI HandConditionBinary(CrudTypeEnum crud, ActionEnum action, BinaryExpression binExpr, List<string> pres, string funcStr)
         {
             var binTuple = HandBinExpr(pres, binExpr);
             if ((binTuple.node == ExpressionType.Equal || binTuple.node == ExpressionType.NotEqual)
@@ -360,7 +342,7 @@ namespace Yunyong.DataExchange.ExpressionX
             }
             else
             {
-                var val = HandBinary(binTuple.right);
+                var val = HandBinary(binTuple.right,funcStr);
                 var leftStr = binTuple.left.ToString();
                 if (leftStr.Contains(".Length")
                     && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
@@ -374,13 +356,11 @@ namespace Yunyong.DataExchange.ExpressionX
                 {
                     var keyTuple = GetKey(binTuple.left, OptionEnum.Compare);
                     return DicHandle.BinaryCompareHandle(crud,action, keyTuple.classFullName, keyTuple.key, keyTuple.alias, val, keyTuple.valType, DicHandle.GetOption(binTuple.node, binTuple.isR));
-                    //dic.ClassFullName = keyTuple.classFullName;
-                    //return dic;
                 }
             }
         }
 
-        private DicModelUI HandConditionCall(MethodCallExpression mcExpr,ActionEnum action,CrudTypeEnum crud)
+        private DicModelUI HandConditionCall(MethodCallExpression mcExpr,ActionEnum action,CrudTypeEnum crud, string funcStr)
         {
             var exprStr = mcExpr.ToString();
             if (exprStr.Contains(".Contains("))
@@ -391,11 +371,11 @@ namespace Yunyong.DataExchange.ExpressionX
                     var memVal = mcExpr.Arguments[0];
                     if (memVal.NodeType == ExpressionType.MemberAccess)
                     {
-                        return CollectionIn(memKey, memVal as MemberExpression,action,crud);
+                        return CollectionIn(memKey, memVal as MemberExpression,action,crud,funcStr);
                     }
                     else if (memVal.NodeType == ExpressionType.NewArrayInit)
                     {
-                        return NewCollectionIn(memVal.NodeType, memKey, memVal,action,crud);
+                        return NewCollectionIn(memVal.NodeType, memKey, memVal,action,crud,funcStr);
                     }
                 }
                 else
@@ -410,26 +390,26 @@ namespace Yunyong.DataExchange.ExpressionX
                             && memType.GetInterfaces().Contains(typeof(IList))
                             && !memType.IsArray)
                         {
-                            return CollectionIn(mcExpr, memO,action,crud);
+                            return CollectionIn(mcExpr, memO,action,crud,funcStr);
                         }
                         else if (memType == typeof(string))
                         {
-                            return StringLike(mcExpr, StringLikeEnum.Contains,action,crud);
+                            return StringLike(mcExpr, StringLikeEnum.Contains,action,crud,funcStr);
                         }
                     }
                     else if (objNodeType == ExpressionType.ListInit)
                     {
-                        return NewCollectionIn(objNodeType, mcExpr, objExpr,action,crud);
+                        return NewCollectionIn(objNodeType, mcExpr, objExpr,action,crud,funcStr);
                     }
                 }
             }
             else if (exprStr.Contains(".StartsWith("))
             {
-                return StringLike(mcExpr, StringLikeEnum.StartsWith,action,crud);
+                return StringLike(mcExpr, StringLikeEnum.StartsWith,action,crud,funcStr);
             }
             else if (exprStr.Contains(".EndsWith("))
             {
-                return StringLike(mcExpr, StringLikeEnum.EndsWith,action,crud);
+                return StringLike(mcExpr, StringLikeEnum.EndsWith,action,crud,funcStr);
             }
 
             return null;
@@ -541,6 +521,19 @@ namespace Yunyong.DataExchange.ExpressionX
                     var miExpr = func.Body as MemberInitExpression;
                     result = HandSelectMemberInit(miExpr);
                 }
+                else if(nodeType==ExpressionType.Convert)
+                {
+                    var tuple = GetKey(body, OptionEnum.None);
+                    var key = tuple.key;
+                    if(!string.IsNullOrWhiteSpace(key))
+                    {
+                        result.Add(new DicModelUI
+                        {
+                            ClassFullName = tuple.classFullName,
+                            ColumnOne = key
+                        });
+                    }
+                }
 
                 if (result != null
                     && result.Count > 0)
@@ -585,13 +578,13 @@ namespace Yunyong.DataExchange.ExpressionX
                     {
                         func.Parameters[0].Name
                     };
-                    result = HandConditionBinary(crud,action,binExpr, pres);
+                    result = HandConditionBinary(crud,action,binExpr, pres,func.ToString());
                 }
                 else if (nodeType == ExpressionType.Call)
                 {
 
                     var mcExpr = body as MethodCallExpression;
-                    result = HandConditionCall(mcExpr,action,crud);
+                    result = HandConditionCall(mcExpr,action,crud,func.ToString());
                 }
                 else if (nodeType == ExpressionType.Constant)
                 {
@@ -721,13 +714,13 @@ namespace Yunyong.DataExchange.ExpressionX
                         || action == ActionEnum.Or)
                     {
                         var pres = DC.UiConditions.Select(it => it.TableAliasOne).ToList();
-                        result = HandConditionBinary(crud,action, binExpr, pres);
+                        result = HandConditionBinary(crud,action, binExpr, pres,func.ToString());
                     }
                 }
                 else if (nodeType == ExpressionType.Call)
                 {
                     var mcExpr = body as MethodCallExpression;
-                    result = HandConditionCall(mcExpr,action,crud);
+                    result = HandConditionCall(mcExpr,action,crud,func.ToString());
                     result.Action = action;
                 }
                 else if (nodeType == ExpressionType.Constant)

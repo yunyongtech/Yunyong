@@ -65,17 +65,23 @@ namespace Yunyong.DataExchange.ExpressionX
             else
             {
                 typeT = type.GetGenericArguments()[0];
+                if (typeT.IsGenericType
+                    && typeT.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    typeT = typeT.GetGenericArguments()[0];
+                }
             }
 
-            if (IsSysType(typeT))
-            {
-                valType = typeT;
-            }
-            else
-            {
-                var currAssembly = DC.SC.GetAssembly(typeT.FullName,DC);
-                valType = currAssembly.GetType(typeT.FullName);
-            }
+            //if (IsSysType(typeT))
+            //{
+            //    valType = typeT;
+            //}
+            //else
+            //{
+            //    var currAssembly = DC.SC.GetAssembly(typeT.FullName, DC);
+            //    valType = currAssembly.GetType(typeT.FullName);
+            //}
+            valType = typeT;
 
             //
             var ds = vals as dynamic;
@@ -91,7 +97,7 @@ namespace Yunyong.DataExchange.ExpressionX
             }
             for (var i = 0; i < num; i++)
             {
-                intVals.Add(DC.GH.GetTypeValue(valType, ds[i]));
+                intVals.Add(DC.GH.GetTypeValue(ds[i]));
             }
             str = string.Join(",", intVals.Select(it => it.ToString()));
 
@@ -103,9 +109,10 @@ namespace Yunyong.DataExchange.ExpressionX
         /*******************************************************************************************************/
 
         // -02-03-
-        internal string GetMemExprVal(MemberExpression memExpr)
+        internal object GetMemExprVal(MemberExpression memExpr, string funcStr)
         {
-            var str = string.Empty;
+            var objx = default(object);
+            var fName = string.Empty;
 
             //
             if (memExpr.Expression == null                                                                                    //  null   Property   
@@ -114,7 +121,8 @@ namespace Yunyong.DataExchange.ExpressionX
                 var targetProp = memExpr.Member as PropertyInfo;
                 var type = memExpr.Type as Type;
                 var instance = Activator.CreateInstance(type);
-                str = targetProp.GetValue(instance, null).ToString();
+                fName = targetProp.Name;
+                objx = DC.GH.GetTypeValue(targetProp, instance); // targetProp.GetValue(instance, null).ToString();
             }
             else if (memExpr.Expression.NodeType == ExpressionType.Constant                     //  Constant   Field 
                 && memExpr.Member.MemberType == MemberTypes.Field)
@@ -128,11 +136,13 @@ namespace Yunyong.DataExchange.ExpressionX
                 {
                     var type = memExpr.Type as Type;
                     var vals = fInfo.GetValue(obj);
-                    str = InValueForListT(type, vals, fType.IsArray);
+                    fName = fInfo.Name;
+                    objx = InValueForListT(type, vals, fType.IsArray);
                 }
                 else
                 {
-                    str = fInfo.GetValue(obj).ToString();
+                    fName = fInfo.Name;
+                    objx = fInfo.GetValue(obj);//.ToString();
                 }
             }
             else if (memExpr.Expression.NodeType == ExpressionType.Constant                     //  Constant   Property
@@ -146,11 +156,13 @@ namespace Yunyong.DataExchange.ExpressionX
                 if (IsListT(valType)
                     || valType.IsArray)
                 {
-                    str = InValueForListT(valType, valObj, valType.IsArray);
+                    fName = pInfo.Name;
+                    objx = InValueForListT(valType, valObj, valType.IsArray);
                 }
                 else
                 {
-                    str = DC.GH.GetTypeValue(valType, pInfo, obj);    // 此项 可能 有问题 
+                    fName = pInfo.Name;
+                    objx = DC.GH.GetTypeValue(pInfo, obj);    // 此项 可能 有问题 
                 }
             }
             else if (memExpr.Expression.NodeType == ExpressionType.MemberAccess          //  MemberAccess   Property
@@ -170,11 +182,13 @@ namespace Yunyong.DataExchange.ExpressionX
                     {
                         var type = memExpr.Type as Type;
                         var vals = targetProp.GetValue(valObj);
-                        str = InValueForListT(type, vals, fType.IsArray);
+                        fName = targetProp.Name;
+                        objx = InValueForListT(type, vals, fType.IsArray);
                     }
                     else
                     {
-                        str = DC.GH.GetTypeValue(fType, targetProp, valObj);
+                        fName = targetProp.Name;
+                        objx = DC.GH.GetTypeValue(targetProp, valObj);
                     }
                 }
                 else if (innerMember.Member.MemberType == MemberTypes.Field)
@@ -184,24 +198,35 @@ namespace Yunyong.DataExchange.ExpressionX
                     var obj = cExpr.Value;
                     var valObj = fInfo.GetValue(obj);
                     var valType = targetProp.PropertyType;
-                    str = DC.GH.GetTypeValue(valType, targetProp, valObj);
+                    fName = targetProp.Name;
+                    objx = DC.GH.GetTypeValue(targetProp, valObj);
                 }
             }
 
             //
-            if (!string.IsNullOrWhiteSpace(str))
+            //if (!string.IsNullOrWhiteSpace(objx))
+            //if (objx != null)
+            //{
+            //    return objx;
+            //}
+            //else if( objx==null
+            //    && )
+            //else
+            //{
+            //    throw new Exception();
+            //}
+
+            if (objx == null)
             {
-                return str;
+                throw new Exception($"条件筛选表达式【{funcStr}】中,条件值【{fName}】不能为 Null !");
             }
-            else
-            {
-                throw new Exception();
-            }
+
+            return objx;
         }
         // 01
-        internal string GetCallVal(MethodCallExpression mcExpr)
+        internal object GetCallVal(MethodCallExpression mcExpr, string funcStr)
         {
-            var val = string.Empty;
+            var val = default(object);
 
             //
             var type = mcExpr.Type;
@@ -216,7 +241,7 @@ namespace Yunyong.DataExchange.ExpressionX
                 }
                 else if (mcExpr.Object.NodeType == ExpressionType.MemberAccess)
                 {
-                    var obj = Convert.ToDateTime(GetMemExprVal(mcExpr.Object as MemberExpression));
+                    var obj = Convert.ToDateTime(GetMemExprVal(mcExpr.Object as MemberExpression, funcStr));
                     var method = mcExpr.Method.Name;
                     var args = new List<object>();
                     foreach (var arg in mcExpr.Arguments)
@@ -227,7 +252,7 @@ namespace Yunyong.DataExchange.ExpressionX
                             args.Add(carg.Value);
                         }
                     }
-                    val = (type.InvokeMember(method, BindingFlags.Default | BindingFlags.InvokeMethod, null, obj, args.ToArray())).ToString();
+                    val = type.InvokeMember(method, BindingFlags.Default | BindingFlags.InvokeMethod, null, obj, args.ToArray());//.ToString();
                 }
             }
             else if (pExpr.NodeType == ExpressionType.Constant)
@@ -237,15 +262,10 @@ namespace Yunyong.DataExchange.ExpressionX
             }
             else if (pExpr.NodeType == ExpressionType.MemberAccess)
             {
-                val = GetMemExprVal(pExpr as MemberExpression);
-            }
-            else
-            {
-                val = string.Empty;
+                val = GetMemExprVal(pExpr as MemberExpression, funcStr);
             }
 
-            //
-            if (!string.IsNullOrWhiteSpace(val))
+            if (val != null)
             {
                 return val;
             }
@@ -255,18 +275,48 @@ namespace Yunyong.DataExchange.ExpressionX
             }
         }
         // 01
-        internal string GetConstantVal(ConstantExpression con, Type valType)
+        internal object GetConstantVal(ConstantExpression con, Type valType)
         {
-            //var con = conExpr as ConstantExpression;
-
             if (valType.IsEnum)
             {
-                return ((int)(con.Value)).ToString();
+                return con.Value; // (int)(con.Value); // ((int)(con.Value)).ToString();
             }
             else
             {
-                return con.Value.ToString();
+                return con.Value; // .ToString();
             }
+        }
+
+        // 02
+        internal object GetConvertVal(Expression binRight, string funcStr)
+        {
+            var result = default(object);
+            if (binRight.NodeType == ExpressionType.Convert)
+            {
+                var expr = binRight as UnaryExpression;
+                if (expr.Operand.NodeType == ExpressionType.Convert)
+                {
+                    var exprExpr = expr.Operand as UnaryExpression;
+                    var memExpr = exprExpr.Operand as MemberExpression;
+                    var memCon = memExpr.Expression as ConstantExpression;
+                    var memObj = memCon.Value;
+                    var memFiled = memExpr.Member as FieldInfo;
+                    result = memFiled.GetValue(memObj);//.ToString();
+                }
+                else if (expr.Operand.NodeType == ExpressionType.MemberAccess)
+                {
+                    result = DC.VH.GetMemExprVal(expr.Operand as MemberExpression, funcStr);
+                }
+                else if (expr.Operand.NodeType == ExpressionType.Constant)
+                {
+                    result = DC.VH.GetConstantVal(expr.Operand as ConstantExpression, expr.Operand.Type);
+                }
+            }
+            else
+            {
+                throw new Exception();
+            }
+            return result;
         }
 
         /*******************************************************************************************************/

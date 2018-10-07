@@ -9,6 +9,15 @@ namespace Yunyong.DataExchange.Helper
 {
     internal class GenericHelper : ClassInstance<GenericHelper>
     {
+        public object GetTypeValue(PropertyInfo outerProp, object outerObj)
+        {
+            return outerProp.GetValue(outerObj);
+        }
+        public object GetTypeValue(object objVal)
+        {
+            return objVal;
+        }
+        [Obsolete("废弃方法,仅作参考用!")]
         public string GetTypeValue(Type valType, PropertyInfo outerProp, object outerObj)
         {
             var val = string.Empty;
@@ -47,7 +56,7 @@ namespace Yunyong.DataExchange.Helper
             {
                 val = outerProp.GetValue(outerObj, null).ToString();
             }
-            else if(valType == typeof(DateTime))
+            else if (valType == typeof(DateTime))
             {
                 val = outerProp.GetValue(outerObj, null).ToDatetimeStr();
             }
@@ -97,16 +106,13 @@ namespace Yunyong.DataExchange.Helper
                 //val = ((int)outerProp.GetValue(outerObj, null)).ToString();
                 val = outerProp.GetValue(outerObj, null).ToString();
             }
-            else if (valType.IsSubclassOf(typeof(Nullable<>)))
-            {
-                val = outerProp.GetValue(outerObj, null)?.ToString();
-            }
             else
             {
-                val = outerProp.GetValue(outerObj, null)?.ToString();
+                val = outerProp.GetValue(outerObj, null).ToString();
             }
             return val;
         }
+        [Obsolete("废弃方法,仅作参考用!")]
         public string GetTypeValue(Type valType, object objVal)
         {
             var val = string.Empty;
@@ -186,7 +192,7 @@ namespace Yunyong.DataExchange.Helper
             }
             return val;
         }
-        
+
         public List<PropertyInfo> GetPropertyInfos<M>(M m)
         {
             if (m == null)
@@ -206,7 +212,7 @@ namespace Yunyong.DataExchange.Helper
         {
 
 
-            if(string.IsNullOrWhiteSpace(fullClassName))
+            if (string.IsNullOrWhiteSpace(fullClassName))
             {
                 return null;
             }
@@ -240,11 +246,11 @@ namespace Yunyong.DataExchange.Helper
             }
 
             //
-            if(assemD != null)
+            if (assemD != null)
             {
                 return assemD;
             }
-            else if(assemE!=null)
+            else if (assemE != null)
             {
                 return assemE;
             }
@@ -253,6 +259,6 @@ namespace Yunyong.DataExchange.Helper
                 return null;
             }
         }
-        
+
     }
 }
