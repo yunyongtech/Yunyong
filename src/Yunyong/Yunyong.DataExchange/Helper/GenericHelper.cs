@@ -97,9 +97,13 @@ namespace Yunyong.DataExchange.Helper
                 //val = ((int)outerProp.GetValue(outerObj, null)).ToString();
                 val = outerProp.GetValue(outerObj, null).ToString();
             }
+            else if (valType.IsSubclassOf(typeof(Nullable<>)))
+            {
+                val = outerProp.GetValue(outerObj, null)?.ToString();
+            }
             else
             {
-                val = outerProp.GetValue(outerObj, null).ToString();
+                val = outerProp.GetValue(outerObj, null)?.ToString();
             }
             return val;
         }
