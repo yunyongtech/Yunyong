@@ -1,14 +1,13 @@
-﻿using System;
+using MyDAL.Core.Helper;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Cache;
-using Yunyong.DataExchange.Common;
-using Yunyong.DataExchange.Enums;
-using Yunyong.DataExchange.ExpressionX;
-using Yunyong.DataExchange.Extensions;
-using Yunyong.DataExchange.Helper;
+using Yunyong.DataExchange.Core.Common;
+using Yunyong.DataExchange.Core.Enums;
+using Yunyong.DataExchange.Core.ExpressionX;
+using Yunyong.DataExchange.Core.Helper;
+using Yunyong.DataExchange.Core.MySql;
 
 namespace Yunyong.DataExchange.Core
 {
@@ -115,12 +114,12 @@ namespace Yunyong.DataExchange.Core
                         ColumnOne = dic.ColumnOne,
                         TableAliasOne = dic.TableAliasOne,
                         TableTwo = dic.TableTwo,
-                        KeyTwo = dic.KeyTwo,
-                        AliasTwo = dic.AliasTwo,
+                        ColumnTwo = dic.ColumnTwo,
+                        TableAliasTwo = dic.TableAliasTwo,
                         Param = dic.Param,
                         ParamRaw = dic.ParamRaw,
                         CsValue = val,
-                        ValueType = dic.ValueType,
+                        CsType = dic.CsType,
                         Option = op,
                         Action = dic.Action,
                         Crud = dic.Crud,
@@ -207,7 +206,7 @@ namespace Yunyong.DataExchange.Core
                     Param = prop.Name,
                     ParamRaw = prop.Name,
                     CsValue = val,
-                    ValueType = prop.PropertyType,
+                    CsType = prop.PropertyType,
                     Action = ActionEnum.Insert,
                     Option = option,
                     TvpIndex = index
