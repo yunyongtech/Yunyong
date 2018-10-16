@@ -10,8 +10,8 @@ namespace Yunyong.DataExchange
 
         public static OnX On(this JoinX join, Expression<Func<bool>> func)
         {
-            var field = join.DC.EH.ExpressionHandle(func, ActionEnum.On, CrudTypeEnum.Join);
-            field.Crud = CrudTypeEnum.Join;
+            join.DC.Action = ActionEnum.On;
+            var field = join.DC.EH.ExpressionHandle(func);
             join.DC.AddConditions(field);
             return new OnX(join.DC);
         }

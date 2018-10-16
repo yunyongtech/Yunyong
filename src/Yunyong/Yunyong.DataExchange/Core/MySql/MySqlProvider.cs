@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Yunyong.Core;
@@ -120,15 +121,16 @@ namespace Yunyong.DataExchange.Core.MySql
             if (XConfig.IsDebug)
             {
                 XDebug.SQL = list;
-                var paras = DC.SqlProvider.GetParameters();
-                XDebug.Parameters = DC
-                    .DbConditions
-                    .Where(it => DC.IsParameter(it))
+                var parax = DC.DbConditions.Where(it => DC.IsParameter(it)).ToList();
+                XDebug.Parameters = parax
                     .Select(dbM =>
                     {
                         var uiM = DC.UiConditions.FirstOrDefault(ui => dbM.Param.Equals(ui.Param, StringComparison.OrdinalIgnoreCase));
                         var field = string.Empty;
-                        if (dbM.Crud == CrudTypeEnum.Query)
+                        if (dbM.Crud == CrudTypeEnum.Query
+                            || dbM.Crud == CrudTypeEnum.Update
+                            || dbM.Crud == CrudTypeEnum.Create
+                            || dbM.Crud == CrudTypeEnum.Delete)
                         {
                             field = dbM.ColumnOne;
                         }
@@ -143,6 +145,32 @@ namespace Yunyong.DataExchange.Core.MySql
                         return $"字段:【{field}】-->【{csVal}】;参数:【{dbM.Param}】-->【{dbVal}】.";
                     })
                     .ToList();
+                XDebug.SqlWithParam = new List<string>();
+                foreach(var sql in XDebug.SQL)
+                {
+                    var sqlStr = sql;
+                    foreach(var par in parax)
+                    {
+                        if(par.DbType == DbType.Boolean
+                            || par.DbType== DbType.Decimal
+                            || par.DbType == DbType.Double
+                            || par.DbType == DbType.Int16
+                            || par.DbType== DbType.Int32
+                            || par.DbType== DbType.Int64
+                            || par.DbType == DbType.Single
+                            || par.DbType == DbType.UInt16
+                            || par.DbType == DbType.UInt32
+                            || par.DbType == DbType.UInt64)
+                        {
+                            sqlStr = sqlStr.Replace($"@{par.Param}", par.DbValue == null ? "DbNull" : par.DbValue.ToString());
+                        }
+                        else
+                        {
+                            sqlStr = sqlStr.Replace($"@{par.Param}", par.DbValue == null ? "DbNull" : $"'{par.DbValue.ToString()}'");
+                        }
+                    }
+                    XDebug.SqlWithParam.Add(sqlStr);
+                }
             }
 
         }
@@ -359,6 +387,21 @@ namespace Yunyong.DataExchange.Core.MySql
                                         break;
                                 }
                                 break;
+                            case OptionEnum.Trim:
+                            case OptionEnum.LTrim:
+                            case OptionEnum.RTrim:
+                                switch (item.Crud)
+                                {
+                                    case CrudTypeEnum.Join:
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}({item.TableAliasOne}.`{item.ColumnOne}`){item.Compare.ToEnumDesc<CompareEnum>()}@{item.Param} ";
+                                        break;
+                                    case CrudTypeEnum.Delete:
+                                    case CrudTypeEnum.Update:
+                                    case CrudTypeEnum.Query:
+                                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.Option.ToEnumDesc<OptionEnum>()}(`{item.ColumnOne}`){item.Compare.ToEnumDesc<CompareEnum>()}@{item.Param} ";
+                                        break;
+                                }
+                                break;
                             case OptionEnum.OneEqualOne:
                                 str += $" {item.Action.ToEnumDesc<ActionEnum>()} @{item.Param} ";
                                 break;
@@ -430,7 +473,7 @@ namespace Yunyong.DataExchange.Core.MySql
                 }
             }
 
-            return string.Join(",", list);
+            return string.Join(", \r\n\t", list);
         }
 
         internal async Task<List<ColumnInfo>> GetColumnsInfos(string tableName)
@@ -549,13 +592,13 @@ namespace Yunyong.DataExchange.Core.MySql
                     list.Add($" delete {From()} {Table<M>(type)} {Wheres()} ; ");
                     break;
                 case UiMethodEnum.UpdateAsync:
-                    list.Add($" update {Table<M>(type)} \r\n set {DC.SqlProvider.GetUpdates()} {Wheres()} ;");
+                    list.Add($" update {Table<M>(type)} \r\n set {GetUpdates()} {Wheres()} ;");
                     break;
                 case UiMethodEnum.QueryFirstOrDefaultAsync:
-                    list.Add($"select {Columns()} {From()} {Table<M>(type)} {Wheres()} ; ");
+                    list.Add($"select {Columns()} {From()} {Table<M>(type)} {Wheres()} {GetOrderByPart<M>()} ; ");
                     break;
                 case UiMethodEnum.JoinQueryFirstOrDefaultAsync:
-                    list.Add($" select {Columns()} {From()} {Joins()} {Wheres()} ; ");
+                    list.Add($" select {Columns()} {From()} {Joins()} {Wheres()} {GetOrderByPart()} ; ");
                     break;
                 case UiMethodEnum.QueryListAsync:
                     list.Add($"select {Columns()} {From()} {Table<M>(type)} {Wheres()} {GetOrderByPart<M>()} ; ");

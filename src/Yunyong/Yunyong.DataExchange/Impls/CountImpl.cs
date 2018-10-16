@@ -19,7 +19,9 @@ namespace Yunyong.DataExchange.Impls
 
         public async Task<long> CountAsync()
         {
-            DC.AddConditions(DicHandle.ConditionCountHandle(CrudTypeEnum.Query,typeof(M).FullName,"*"));
+            DC.Option = OptionEnum.Count;
+            DC.Compare = CompareEnum.None;
+            DC.AddConditions(DC.DH.CountDic(typeof(M).FullName,"*"));
             DC.IP.ConvertDic();
             return await DC.DS.ExecuteScalarAsync<long>(
                 DC.Conn,
@@ -29,9 +31,12 @@ namespace Yunyong.DataExchange.Impls
 
         public async Task<long> CountAsync<F>(Expression<Func<M, F>> func)
         {
+            DC.Action = ActionEnum.Select;
             var keyDic = DC.EH.ExpressionHandle(func)[0];
             var key = keyDic.ColumnOne;
-            DC.AddConditions(DicHandle.ConditionCountHandle(CrudTypeEnum.Query,typeof(M).FullName,key));
+            DC.Option = OptionEnum.Count;
+            DC.Compare = CompareEnum.None;
+            DC.AddConditions(DC.DH.CountDic(typeof(M).FullName,key));
             DC.IP.ConvertDic();
             return await DC.DS.ExecuteScalarAsync<long>(
                  DC.Conn,
@@ -51,7 +56,9 @@ namespace Yunyong.DataExchange.Impls
         public async Task<long> CountAsync()
         {
             //CountMHandle<M>("*");
-            DC.AddConditions(DicHandle.ConditionCountHandle(CrudTypeEnum.Join,string.Empty, "*", string.Empty));
+            DC.Option = OptionEnum.Count;
+            DC.Compare = CompareEnum.None;
+            DC.AddConditions(DC.DH.CountDic(string.Empty, "*", string.Empty));
             DC.IP.ConvertDic();
             return await DC.DS.ExecuteScalarAsync<long>(
                 DC.Conn,
@@ -61,9 +68,11 @@ namespace Yunyong.DataExchange.Impls
 
         public async Task<long> CountAsync<F>(Expression<Func<F>> func)
         {
-            //CountMHandle<M>("*");
+            DC.Action = ActionEnum.Select;
             var dic = DC.EH.ExpressionHandle(func)[0];
-            DC.AddConditions(DicHandle.ConditionCountHandle(CrudTypeEnum.Join,dic.ClassFullName, dic.ColumnOne, dic.TableAliasOne));
+            DC.Option = OptionEnum.Count;
+            DC.Compare = CompareEnum.None;
+            DC.AddConditions(DC.DH.CountDic(dic.ClassFullName, dic.ColumnOne, dic.TableAliasOne));
             DC.IP.ConvertDic();
             return await DC.DS.ExecuteScalarAsync<long>(
                 DC.Conn,

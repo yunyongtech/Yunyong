@@ -19,7 +19,8 @@ namespace Yunyong.DataExchange
         /// <param name="func">格式: it => it.Id == m.Id </param>
         public static WhereD<M> Where<M>(this Deleter<M> deleter, Expression<Func<M, bool>> func)
         {
-            deleter.DC.OP.WhereHandle(func, CrudTypeEnum.Delete);
+            deleter.DC.Action = ActionEnum.Where;
+            deleter.DC.OP.WhereHandle(func);
             return new WhereD<M>(deleter.DC);
         }
 
@@ -31,7 +32,8 @@ namespace Yunyong.DataExchange
         /// <param name="func">格式: it => it.AgentId == id2</param>
         public static WhereU<M> Where<M>(this SetU<M> set, Expression<Func<M, bool>> func)
         {
-            set.DC.OP.WhereHandle(func, CrudTypeEnum.Update);
+            set.DC.Action = ActionEnum.Where;
+            set.DC.OP.WhereHandle(func);
             return new WhereU<M>(set.DC);
         }
 
@@ -43,7 +45,8 @@ namespace Yunyong.DataExchange
         /// <param name="func">格式: it => it.CreatedOn >= WhereTest.CreatedOn</param>
         public static WhereQ<M> Where<M>(this Selecter<M> selecter, Expression<Func<M, bool>> func)
         {
-            selecter.DC.OP.WhereHandle(func, CrudTypeEnum.Query);
+            selecter.DC.Action = ActionEnum.Where;
+            selecter.DC.OP.WhereHandle(func);
             return new WhereQ<M>(selecter.DC);
         }
         /// <summary>
@@ -51,6 +54,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static WhereQ<M> Where<M>(this Selecter<M> selecter, object mWhere)
         {
+            selecter.DC.Action = ActionEnum.Where;
             selecter.DC.OP.WhereDynamicHandle<M>(mWhere);
             return new WhereQ<M>(selecter.DC);
         }
@@ -59,7 +63,8 @@ namespace Yunyong.DataExchange
 
         public static WhereX Where(this OnX on, Expression<Func<bool>> func)
         {
-            on.DC.OP.WhereJoinHandle(on, func, ActionEnum.Where);
+            on.DC.Action = ActionEnum.Where;
+            on.DC.OP.WhereJoinHandle(on, func);
             return new WhereX(on.DC);
         }
 
