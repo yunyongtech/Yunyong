@@ -6,7 +6,8 @@ using Yunyong.DataExchange.Core.Extensions;
 
 namespace Yunyong.DataExchange.Core.Helper
 {
-    internal class ParameterHandle : ClassInstance<ParameterHandle>
+    internal class ParameterHelper
+        : ClassInstance<ParameterHelper>
     {
         private static ParamInfo GetDefault(string name, object value, DbType? dbType)
         {
@@ -24,7 +25,9 @@ namespace Yunyong.DataExchange.Core.Helper
         private static DbType GetType(string colType, Type realType)
         {
             var type = default(DbType);
-            if (realType == typeof(bool))
+
+            //
+            if (realType == XConfig.Bool)
             {
                 if (colType.IsNullStr())
                 {
@@ -39,7 +42,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Boolean;
                 }
             }
-            else if (realType == typeof(byte))
+            else if (realType == XConfig.Byte)
             {
                 if (colType.IsNullStr())
                 {
@@ -54,7 +57,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Byte;
                 }
             }
-            else if (realType == typeof(char))
+            else if (realType == XConfig.Char)
             {
                 if (colType.IsNullStr())
                 {
@@ -69,7 +72,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.AnsiString;
                 }
             }
-            else if (realType == typeof(decimal))
+            else if (realType == XConfig.Decimal)
             {
                 if (colType.IsNullStr())
                 {
@@ -84,7 +87,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Decimal;
                 }
             }
-            else if (realType == typeof(double))
+            else if (realType == XConfig.Double)
             {
                 if (colType.IsNullStr())
                 {
@@ -99,7 +102,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Double;
                 }
             }
-            else if (realType == typeof(float))
+            else if (realType == XConfig.Float)
             {
                 if (colType.IsNullStr())
                 {
@@ -114,7 +117,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Single ;
                 }
             }
-            else if (realType == typeof(int))
+            else if (realType == XConfig.Int)
             {
                 if (colType.IsNullStr())
                 {
@@ -129,7 +132,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Int32;
                 }
             }
-            else if (realType == typeof(long))
+            else if (realType == XConfig.Long)
             {
                 if (colType.IsNullStr())
                 {
@@ -144,7 +147,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Int64;
                 }
             }
-            else if (realType == typeof(sbyte))
+            else if (realType == XConfig.Sbyte)
             {
                 if (colType.IsNullStr())
                 {
@@ -159,7 +162,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.SByte;
                 }
             }
-            else if (realType == typeof(short))
+            else if (realType == XConfig.Short)
             {
                 if (colType.IsNullStr())
                 {
@@ -174,7 +177,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Int16;
                 }
             }
-            else if (realType == typeof(uint))
+            else if (realType == XConfig.Uint)
             {
                 if (colType.IsNullStr())
                 {
@@ -189,7 +192,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.UInt32;
                 }
             }
-            else if (realType == typeof(ulong))
+            else if (realType == XConfig.Ulong)
             {
                 if (colType.IsNullStr())
                 {
@@ -204,7 +207,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.UInt64;
                 }
             }
-            else if (realType == typeof(ushort))
+            else if (realType == XConfig.Ushort)
             {
                 if (colType.IsNullStr())
                 {
@@ -219,7 +222,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.UInt16;
                 }
             }
-            else if (realType == typeof(string))
+            else if (realType == XConfig.String)
             {
                 if (colType.IsNullStr())
                 {
@@ -234,22 +237,22 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.AnsiString;
                 }
             }
-            else if (realType == typeof(DateTime))
+            else if (realType == XConfig.DateTime)
             {
                 if (colType.IsNullStr())
                 {
-                    type = DbType.DateTime2;
+                    type = DbType.AnsiString;
                 }
                 else if (colType.Equals("datetime",StringComparison.OrdinalIgnoreCase))
                 {
-                    type = DbType.DateTime2;
+                    type = DbType.AnsiString;
                 }
                 else
                 {
-                    type = DbType.DateTime;
+                    type = DbType.DateTime2;
                 }
             }
-            else if (realType == typeof(TimeSpan))
+            else if (realType == XConfig.TimeSpan)
             {
                 if (colType.IsNullStr())
                 {
@@ -264,7 +267,7 @@ namespace Yunyong.DataExchange.Core.Helper
                     type = DbType.Time;
                 }
             }
-            else if (realType == typeof(Guid))
+            else if (realType == XConfig.Guid)
             {
                 if (colType.IsNullStr())
                 {
@@ -596,13 +599,13 @@ namespace Yunyong.DataExchange.Core.Helper
             var val = default(object);
 
             //
-            if (type == DbType.DateTime2 )
+            if (type == DbType.AnsiString )
             {
-                val = ui.CsValue.ToDateTime();
+                val = ui.CsValueStr;  
             }
-            else if (type == DbType.DateTime)
+            else if (type == DbType.DateTime2)
             {
-                val = ui.CsValue.ToDateTime();
+                val = ui.CsValueStr.ToDateTime();
             }
             else
             {
@@ -620,8 +623,8 @@ namespace Yunyong.DataExchange.Core.Helper
 
             //
             if (type ==DbType.Time)
-            {            
-                val = ui.CsValue.ToDateTime();                    
+            {
+                val = ui.CsValueStr.ToDateTime();                    
             }
             else
             {
@@ -677,7 +680,7 @@ namespace Yunyong.DataExchange.Core.Helper
                 }
                 else
                 {
-                    val = ui.CsValue;
+                    val = (int)(ui.CsValue);
                 }
             }
             else

@@ -30,7 +30,6 @@ namespace Yunyong.DataExchange.Core.Common
             }
         }
         public string ClassFullName { get; set; }
-        //public string TableOne { get; set; }
         public string TableAliasOne { get; set; }
         public string ColumnOne { get; set; }
         public string ColumnOneAlias { get; set; }
@@ -41,6 +40,7 @@ namespace Yunyong.DataExchange.Core.Common
         public string Param { get; set; }
         public string ParamRaw { get; set; }
         public object CsValue { get; set; }
+        public string CsValueStr { get; set; }
         public Type CsType { get; set; }
         
         public int TvpIndex { get; set; }
