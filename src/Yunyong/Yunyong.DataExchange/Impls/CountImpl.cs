@@ -2,26 +2,28 @@ using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Yunyong.DataExchange.Core;
-using Yunyong.DataExchange.Core.Common;
+using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Enums;
-using Yunyong.DataExchange.Core.ExpressionX;
 using Yunyong.DataExchange.Interfaces;
 
 namespace Yunyong.DataExchange.Impls
 {
     internal class CountImpl<M>
         : Impler, ICount<M>
+        where M : class
     {
-        internal CountImpl(Context dc) 
+        internal CountImpl(Context dc)
             : base(dc)
         {
         }
 
         public async Task<long> CountAsync()
         {
+            DC.Action = ActionEnum.Select;
+
             DC.Option = OptionEnum.Count;
             DC.Compare = CompareEnum.None;
-            DC.AddConditions(DC.DH.CountDic(typeof(M).FullName,"*"));
+            DC.AddConditions(DC.DH.CountDic(typeof(M).FullName, "*"));
             DC.IP.ConvertDic();
             return await DC.DS.ExecuteScalarAsync<long>(
                 DC.Conn,
@@ -36,7 +38,7 @@ namespace Yunyong.DataExchange.Impls
             var key = keyDic.ColumnOne;
             DC.Option = OptionEnum.Count;
             DC.Compare = CompareEnum.None;
-            DC.AddConditions(DC.DH.CountDic(typeof(M).FullName,key));
+            DC.AddConditions(DC.DH.CountDic(typeof(M).FullName, key));
             DC.IP.ConvertDic();
             return await DC.DS.ExecuteScalarAsync<long>(
                  DC.Conn,
@@ -48,14 +50,15 @@ namespace Yunyong.DataExchange.Impls
     internal class CountXImpl
         : Impler, ICountX
     {
-        public CountXImpl(Context dc) 
+        public CountXImpl(Context dc)
             : base(dc)
         {
         }
-        
+
         public async Task<long> CountAsync()
         {
-            //CountMHandle<M>("*");
+            DC.Action = ActionEnum.Select;
+
             DC.Option = OptionEnum.Count;
             DC.Compare = CompareEnum.None;
             DC.AddConditions(DC.DH.CountDic(string.Empty, "*", string.Empty));

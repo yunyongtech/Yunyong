@@ -5,11 +5,10 @@ using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Cache;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
-using Yunyong.DataExchange.Core.ExpressionX;
 using Yunyong.DataExchange.Core.Helper;
 using Yunyong.DataExchange.Core.MySql;
 
-namespace Yunyong.DataExchange.Core
+namespace Yunyong.DataExchange.Core.Bases
 {
     internal abstract class Context
     {
@@ -19,17 +18,16 @@ namespace Yunyong.DataExchange.Core
             Conn = conn;
             UiConditions = new List<DicModelUI>();
             DbConditions = new List<DicModelDB>();
-            AH = AttributeHelper.Instance;
-            VH = new ValHandle(this);
+            AH = new AttributeHelper(this);
+            VH = new CsValueHelper(this);
             GH = GenericHelper.Instance;
-            EH = new ExpressionHandleX(this);
+            EH = new XExpression(this);
             SC = StaticCache.Instance;
-            PH = ParameterHelper.Instance;
+            PH = new ParameterHelper(this);
             BDH = BatchDataHelper.Instance;
             SqlProvider = new MySqlProvider(this);
             DS = DataSource.Instance;
-            DH = DicHandle.Instance;
-            DH.DC = this;
+            DH = new DicModelHelper(this);
         }
 
         /************************************************************************************************************************/
@@ -43,9 +41,9 @@ namespace Yunyong.DataExchange.Core
 
         internal XDebug Hint { get; set; }
 
-        internal ExpressionHandleX EH { get; private set; }
-        internal ValHandle VH { get; private set; }
-        internal DicHandle DH { get; private set; }
+        internal XExpression EH { get; private set; }
+        internal CsValueHelper VH { get; private set; }
+        internal DicModelHelper DH { get; private set; }
 
         /************************************************************************************************************************/
 
@@ -127,7 +125,7 @@ namespace Yunyong.DataExchange.Core
                     }
 
                     //
-                    var dicx = DicHandle.UiDicCopy(dic, val,dic.CsValueStr, op);
+                    var dicx = DicModelHelper.UiDicCopy(dic, val,dic.CsValueStr, op);
                     AddConditions(dicx);
                 }
                 UiConditions.Remove(dic);
@@ -168,41 +166,11 @@ namespace Yunyong.DataExchange.Core
             var key = SC.GetKey(type.FullName, Conn.Database);
 
             //
-            var table = SqlProvider.GetTableName(type);
+            var table = SqlProvider.GetTableName<M>();
             SC.SetModelTableName(key, table);
             SC.SetModelType(key, type);
             SC.SetModelProperys(type, this);
             (SC.SetModelColumnInfos(key, this)).GetAwaiter().GetResult();
-        }
-
-        private void SetInsertValue<M>(M m, OptionEnum option, int index)
-        {
-            var key = SC.GetKey(m.GetType().FullName, Conn.Database);
-            var props = SC.GetModelProperys(key);
-            var columns = SC.GetColumnInfos(key);
-            var fullName = typeof(M).FullName;
-
-            foreach (var prop in props)
-            {
-                //var val = GH.GetTypeValue(prop, m);
-                var val = VH.PropertyValue(prop, m);
-                Option = option;
-                Compare = CompareEnum.None;
-                AddConditions(DH.InsertDic(fullName, prop.Name, val, prop.PropertyType, option, index));
-            }
-        }
-        internal void GetProperties<M>(M m)
-        {
-            SetInsertValue(m, OptionEnum.Insert, 0);
-        }
-        internal void GetProperties<M>(IEnumerable<M> mList)
-        {
-            var i = 0;
-            foreach (var m in mList)
-            {
-                SetInsertValue(m, OptionEnum.InsertTVP, i);
-                i++;
-            }
         }
 
     }

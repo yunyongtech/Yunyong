@@ -4,10 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Yunyong.Core;
 using Yunyong.DataExchange.AdoNet;
+using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
+using Yunyong.DataExchange.Core.Extensions;
+using Yunyong.DataExchange.Core.MySql.Models;
 
 namespace Yunyong.DataExchange.Core.MySql
 {
@@ -138,38 +140,53 @@ namespace Yunyong.DataExchange.Core.MySql
                         {
                             field = $"{dbM.TableAliasOne}.{dbM.ColumnOne}";
                         }
+
+                        //
                         var csVal = string.Empty;
-                        csVal = uiM.CsValue == null ? "Null" : uiM.CsValue.ToString();
+                        if (uiM.CsValue == null)
+                        {
+                            csVal = "Null";
+                        }
+                        else if (uiM.CsType == XConfig.DateTime)
+                        {
+                            csVal = uiM.CsValue.ToDateTimeStr();
+                        }
+                        else
+                        {
+                            csVal = uiM.CsValue.ToString();
+                        }
+
+                        //
                         var dbVal = string.Empty;
                         dbVal = dbM.DbValue == null ? "DbNull" : dbM.DbValue.ToString();
                         return $"字段:【{field}】-->【{csVal}】;参数:【{dbM.Param}】-->【{dbVal}】.";
                     })
                     .ToList();
-                XDebug.SqlWithParam = new List<string>();
-                foreach(var sql in XDebug.SQL)
+                XDebug.SqlWithParams = new List<string>();
+                foreach (var sql in XDebug.SQL)
                 {
                     var sqlStr = sql;
-                    foreach(var par in parax)
+                    foreach (var par in parax)
                     {
-                        if(par.DbType == DbType.Boolean
-                            || par.DbType== DbType.Decimal
+                        if (par.DbType == DbType.Boolean
+                            || par.DbType == DbType.Decimal
                             || par.DbType == DbType.Double
                             || par.DbType == DbType.Int16
-                            || par.DbType== DbType.Int32
-                            || par.DbType== DbType.Int64
+                            || par.DbType == DbType.Int32
+                            || par.DbType == DbType.Int64
                             || par.DbType == DbType.Single
                             || par.DbType == DbType.UInt16
                             || par.DbType == DbType.UInt32
                             || par.DbType == DbType.UInt64)
                         {
-                            sqlStr = sqlStr.Replace($"@{par.Param}", par.DbValue == null ? "DbNull" : par.DbValue.ToString());
+                            sqlStr = sqlStr.Replace($"@{par.Param}", par.DbValue == null ? "null" : par.DbValue.ToString());
                         }
                         else
                         {
-                            sqlStr = sqlStr.Replace($"@{par.Param}", par.DbValue == null ? "DbNull" : $"'{par.DbValue.ToString()}'");
+                            sqlStr = sqlStr.Replace($"@{par.Param}", par.DbValue == null ? "null" : $"'{par.DbValue.ToString()}'");
                         }
                     }
-                    XDebug.SqlWithParam.Add(sqlStr);
+                    XDebug.SqlWithParams.Add(sqlStr);
                 }
             }
 
@@ -545,15 +562,30 @@ namespace Yunyong.DataExchange.Core.MySql
             return paras;
         }
 
-        internal string GetTableName(Type mType)
+        internal string GetTableName<M>()
         {
             var tableName = string.Empty;
-            tableName = DC.AH.GetAttributePropVal<TableAttribute>(mType, a => a.Name);
+            tableName = DC.AH.GetAttributePropVal<M,XTableAttribute>(a => a.Name);
+            if (tableName.IsNullStr())
+            {
+                tableName = DC.AH.GetAttributePropVal<M,TableAttribute>(a => a.Name);
+            }
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                throw new Exception("DB Entity 缺少 TableAttribute 指定的表名!");
+                throw new Exception($"类 [[{typeof(M).FullName}]] 必须是与 DB Table 对应的实体类,并且要由 TableAttribute 指定对应的表名!");
             }
             return $"`{tableName}`";
+        }
+
+        internal string GetTablePK(string fullName)
+        {
+            var key = DC.SC.GetKey(fullName, DC.Conn.Database);
+            var col = DC.SC.GetColumnInfos(key).FirstOrDefault(it => "PRI".Equals(it.KeyType, StringComparison.OrdinalIgnoreCase));
+            if (col == null)
+            {
+                throw new Exception($"类 [[{fullName}]] 对应的表 [[{col.TableName}]] 没有主键!");
+            }
+            return col.ColumnName;
         }
 
         internal OptionEnum GetChangeOption(ChangeEnum change)
