@@ -2,7 +2,8 @@
 
 namespace Yunyong.DataExchange
 {
-    public class XColumnAttribute : Attribute
+    [AttributeUsage( AttributeTargets.Property,AllowMultiple =false,Inherited =false)]
+    public sealed class XColumnAttribute : Attribute
     {
         /// <summary>
         /// DB 列名

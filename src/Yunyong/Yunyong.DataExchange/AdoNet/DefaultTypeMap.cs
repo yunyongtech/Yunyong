@@ -10,7 +10,7 @@ namespace Yunyong.DataExchange.AdoNet
     /// <summary>
     /// 默认类型映射策略
     /// </summary>
-    public sealed class DefaultTypeMap : ITypeMap
+    internal sealed class DefaultTypeMap : ITypeMap
     {
         private readonly List<FieldInfo> _fields;
         private readonly Type _type;
@@ -131,7 +131,9 @@ namespace Yunyong.DataExchange.AdoNet
             }
 
             if (property != null)
+            {
                 return new SimpleMemberMap(columnName, property);
+            }
 
             // roslyn automatically implemented properties, in particular for get-only properties: <{Name}>k__BackingField;
             var backingFieldName = "<" + columnName + ">k__BackingField";
@@ -155,7 +157,9 @@ namespace Yunyong.DataExchange.AdoNet
             }
 
             if (field != null)
+            {
                 return new SimpleMemberMap(columnName, field);
+            }
 
             return null;
         }

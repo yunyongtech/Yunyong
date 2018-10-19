@@ -9,7 +9,7 @@ using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
 using Yunyong.DataExchange.Interfaces;
 
-namespace Yunyong.DataExchange.Core
+namespace Yunyong.DataExchange.Core.Bases
 {
     public abstract class Operator
         : IObjectMethod
@@ -40,10 +40,12 @@ namespace Yunyong.DataExchange.Core
             var list = new List<DicQueryModel>();
             var dic = default(IDictionary<string, object>);
 
+            //
+            var mProps = typeof(M).GetProperties();
             if (objx is ExpandoObject)
             {
                 dic = objx as IDictionary<string, object>;
-                foreach (var mp in typeof(M).GetProperties())
+                foreach (var mp in mProps)
                 {
                     foreach (var sp in dic.Keys)
                     {
@@ -61,9 +63,10 @@ namespace Yunyong.DataExchange.Core
             }
             else
             {
-                foreach (var mp in typeof(M).GetProperties())
+                var oProps = objx.GetType().GetProperties();
+                foreach (var mp in mProps)
                 {
-                    foreach (var sp in objx.GetType().GetProperties())
+                    foreach (var sp in oProps)
                     {
                         if (mp.Name.Equals(sp.Name, StringComparison.OrdinalIgnoreCase))
                         {
@@ -103,19 +106,21 @@ namespace Yunyong.DataExchange.Core
             }
             return result;
         }
-        [Obsolete("作废方法,仅作参考!")]
         private List<(string key, string param, (object val, string valStr) val, Type valType, string colType, CompareEnum compare)> GetWhereKPV<M>(object objx)
         {
             var list = new List<DicQueryModel>();
             var dic = default(IDictionary<string, object>);
-
-            if (objx is PagingQueryOption)
+            //
+            var mProps = typeof(M).GetProperties();
+            var oType = objx.GetType();
+            if (objx is IQueryOption)
             {
-                foreach (var mp in typeof(M).GetProperties())
+                var oProps = oType.GetProperties(XConfig.ClassSelfMember);
+                foreach (var mp in mProps)
                 {
-                    foreach (var sp in objx.GetType().GetProperties(Configs.ClassSelfMember))
+                    foreach (var sp in oProps)
                     {
-                        var spAttr = DC.AH.GetAttribute<QueryColumnAttribute>(objx.GetType(), sp) as QueryColumnAttribute;
+                        var spAttr = DC.AH.GetAttribute<QueryColumnAttribute>(oType, sp) as QueryColumnAttribute;
                         var spName = string.Empty;
                         var compare = CompareEnum.Equal;
                         if (spAttr != null
@@ -144,7 +149,7 @@ namespace Yunyong.DataExchange.Core
             else if (objx is ExpandoObject)
             {
                 dic = objx as IDictionary<string, object>;
-                foreach (var mp in typeof(M).GetProperties())
+                foreach (var mp in mProps)
                 {
                     foreach (var sp in dic.Keys)
                     {
@@ -162,9 +167,10 @@ namespace Yunyong.DataExchange.Core
             }
             else
             {
-                foreach (var mp in typeof(M).GetProperties())
+                var oProps = oType.GetProperties();
+                foreach (var mp in mProps)
                 {
-                    foreach (var sp in objx.GetType().GetProperties())
+                    foreach (var sp in oProps)
                     {
                         if (mp.Name.Equals(sp.Name, StringComparison.OrdinalIgnoreCase))
                         {
@@ -192,7 +198,7 @@ namespace Yunyong.DataExchange.Core
                 {
                     columnType = xx.DataType;
                 }
-                if (objx is PagingQueryOption)
+                if (objx is IQueryOption)
                 {
                     var mp = objx.GetType().GetProperty(prop.VmField);
                     valType = mp.PropertyType;
@@ -201,12 +207,12 @@ namespace Yunyong.DataExchange.Core
                     {
                         continue;
                     }
-                    if(valType.IsList()
+                    if (valType.IsList()
                         || valType.IsArray)
                     {
                         var ox = DC.VH.InValue(valType, val.val);
                         valType = ox.valType;
-                        val = (ox.val,string.Empty);
+                        val = (ox.val, string.Empty);
                     }
                     result.Add((prop.MField, prop.VmField, val, valType, columnType, prop.Compare));
                 }
@@ -242,9 +248,9 @@ namespace Yunyong.DataExchange.Core
 
         /****************************************************************************************************************************************/
 
-        internal void SetChangeHandle<M, F>(Expression<Func<M, F>> func, F modVal, ActionEnum action, OptionEnum option)
+        internal void SetChangeHandle<M, F>(Expression<Func<M, F>> func, F modVal, OptionEnum option)
+            where M : class
         {
-            DC.Action = action;
             var keyDic = DC.EH.FuncMFExpression(func)[0];
             var key = keyDic.ColumnOne;
             var val = default((object val, string valStr));
@@ -255,11 +261,10 @@ namespace Yunyong.DataExchange.Core
             else
             {
                 val = DC.VH.ExpandoObjectValue(modVal);
-                //val = DC.GH.GetTypeValue(modVal);
             }
             DC.Option = option;
             DC.Compare = CompareEnum.None;
-            DC.AddConditions(DC.DH.SetDic(typeof(M).FullName, key, key, val, typeof(F), action));
+            DC.AddConditions(DC.DH.SetDic(typeof(M).FullName, key, key, val, typeof(F)));
         }
 
         internal void SetDynamicHandle<M>(object mSet)
@@ -270,7 +275,7 @@ namespace Yunyong.DataExchange.Core
             {
                 DC.Option = OptionEnum.Set;
                 DC.Compare = CompareEnum.None;
-                DC.AddConditions(DC.DH.SetDic(fullName, tp.key, tp.param, tp.val, tp.valType, ActionEnum.Update));
+                DC.AddConditions(DC.DH.SetDic(fullName, tp.key, tp.param, tp.val, tp.valType));
             }
         }
 
@@ -280,15 +285,15 @@ namespace Yunyong.DataExchange.Core
             op.DC.AddConditions(dic);
         }
 
-        internal void WhereHandle<T>(Expression<Func<T, bool>> func)
+        internal void WhereHandle<M>(Expression<Func<M, bool>> func)
+            where M : class
         {
             var field = DC.EH.FuncMBoolExpression(ActionEnum.Where, func);
-            field.ClassFullName = typeof(T).FullName;
+            field.ClassFullName = typeof(M).FullName;
             field.Action = ActionEnum.Where;
             DC.AddConditions(field);
         }
 
-        [Obsolete("作废方法,做参考用!")]
         internal void WhereDynamicHandle<M>(object mWhere)
         {
             var tuples = GetWhereKPV<M>(mWhere);
@@ -328,14 +333,16 @@ namespace Yunyong.DataExchange.Core
             }
         }
 
-        internal void AndHandle<T>(Expression<Func<T, bool>> func)
+        internal void AndHandle<M>(Expression<Func<M, bool>> func)
+            where M : class
         {
             var field = DC.EH.FuncMBoolExpression(ActionEnum.And, func);
             field.Action = ActionEnum.And;
             DC.AddConditions(field);
         }
 
-        internal void OrHandle<T>(Expression<Func<T, bool>> func)
+        internal void OrHandle<M>(Expression<Func<M, bool>> func)
+            where M : class
         {
             var field = DC.EH.FuncMBoolExpression(ActionEnum.Or, func);
             field.Action = ActionEnum.Or;
@@ -343,6 +350,7 @@ namespace Yunyong.DataExchange.Core
         }
 
         internal void OrderByHandle<M, F>(Expression<Func<M, F>> func, OrderByEnum orderBy)
+            where M : class
         {
             var keyDic = DC.EH.FuncMFExpression(func)[0];
             switch (orderBy)

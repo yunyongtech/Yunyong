@@ -1,20 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Cache;
-using Yunyong.DataExchange.Core.Common;
+using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Extensions;
 using Yunyong.DataExchange.Core.MySql.Models;
 
 namespace Yunyong.DataExchange.Core.Helper
 {
     internal class CodeFirstHelper
-        : ClassInstance<CodeFirstHelper>
     {
+        private Context DC { get; set; }
+
+        internal CodeFirstHelper(Context dc)
+        {
+            DC = dc;
+        }
+
+        /********************************************************************************************************************/
+
         private List<NameTypeModel> GetTableAndTypes(string key)
         {
             var cmTypes = new List<NameTypeModel>();
@@ -26,7 +33,7 @@ namespace Yunyong.DataExchange.Core.Helper
             {
                 if (type.FullName.StartsWith(XConfig.TablesNamespace))
                 {
-                    var table = AttributeHelper.Instance.GetAttribute<TableAttribute>(type) as TableAttribute;
+                    var table = DC.AH.GetAttribute<XTableAttribute>(type) as XTableAttribute;
                     if (table != null)
                     {
                         cmTypes.Add(new NameTypeModel
