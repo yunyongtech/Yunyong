@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace Yunyong.Core
+﻿namespace Yunyong.Core
 {
     /// <summary>
     ///     分页查询设置
     /// </summary>
-    public abstract class PagingQueryOption : IQueryOption
+    public abstract class PagingQueryOption : QueryOption
     {
         /// <summary>
         ///     当前页
@@ -16,15 +14,5 @@ namespace Yunyong.Core
         ///     页面大小
         /// </summary>
         public int PageSize { get; set; } = 10;
-
-        /// <summary>
-        ///     默认排序字段
-        /// </summary>
-        /// <value>
-        ///     The order by.
-        /// </value>
-        //public OrderBy OrderBy { get; set; }
-
-        public List<OrderBy> OrderBys { get; set; } = new List<OrderBy>();
     }
 }

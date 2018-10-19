@@ -36,7 +36,8 @@ namespace Yunyong.Core
                 {
                     ++totalPage;
                 }
-                return (int)totalPage;
+
+                return totalPage;
             }
         }
 

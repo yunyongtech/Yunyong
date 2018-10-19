@@ -11,12 +11,12 @@
         //public static readonly AsyncTaskResult Success = new AsyncTaskResult(AsyncTaskStatus.Success, null);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AsyncTaskResult"/> class.
+        ///     Initializes a new instance of the <see cref="AsyncTaskResult" /> class.
         /// </summary>
         public AsyncTaskResult() : this(AsyncTaskStatus.Success, null)
         {
-
         }
+
         /// <summary>
         ///     AsyncTaskResult
         /// </summary>
@@ -51,7 +51,7 @@
         }
 
         /// <summary>
-        /// Faileds the specified error MSG.
+        ///     Faileds the specified error MSG.
         /// </summary>
         /// <param name="errorMsg">The error MSG.</param>
         /// <param name="target"></param>

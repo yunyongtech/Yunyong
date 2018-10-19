@@ -15,16 +15,18 @@ namespace Yunyong.Core
         {
             return DateTime.Now;
         }
+
         /// <summary>
-        /// 获取当前年份
+        ///     获取当前年份
         /// </summary>
         /// <returns></returns>
         public static int GetThisYear()
         {
             return DateTime.Today.Year;
         }
+
         /// <summary>
-        /// 获取当前月份
+        ///     获取当前月份
         /// </summary>
         /// <returns></returns>
         public static Month GetThisMonth()

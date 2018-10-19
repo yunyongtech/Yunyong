@@ -1,7 +1,7 @@
 ﻿namespace Yunyong.Core
 {
     /// <summary>
-    /// AsyncTaskTResult
+    ///     AsyncTaskTResult
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class AsyncTaskTResult<T> : AsyncTaskResult
@@ -15,14 +15,15 @@
             : this(status, null, default(T))
         {
         }
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="AsyncTaskTResult{T}"/> class.
+        ///     Initializes a new instance of the <see cref="AsyncTaskTResult{T}" /> class.
         /// </summary>
         /// <param name="data">The data.</param>
         public AsyncTaskTResult(T data) : this(AsyncTaskStatus.Success, null, data)
         {
-
         }
+
         /// <summary>
         ///     Parameterized constructor.
         /// </summary>
@@ -52,8 +53,9 @@
         ///     Represents the async task result data.
         /// </summary>
         public T Data { get; }
+
         /// <summary>
-        /// Successes the specified data.
+        ///     Successes the specified data.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
@@ -61,8 +63,9 @@
         {
             return new AsyncTaskTResult<T>(data);
         }
+
         /// <summary>
-        /// Faileds the specified error MSG.
+        ///     Faileds the specified error MSG.
         /// </summary>
         /// <param name="errorMsg">The error MSG.</param>
         /// <returns></returns>
