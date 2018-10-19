@@ -3,7 +3,7 @@
 namespace Yunyong.Core
 {
     /// <summary>
-    /// AopIgnore
+    ///     AopIgnore
     /// </summary>
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class)]
     public class AopIgnoreAttribute : Attribute

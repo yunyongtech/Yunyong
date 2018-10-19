@@ -5,14 +5,13 @@ namespace Yunyong.Core.Attributes
     public enum ChangeOption
     {
         /// <summary>
-        /// +
+        ///     +
         /// </summary>
-        [Description("+")]
-        Add,
+        [Description("+")] Add,
+
         /// <summary>
-        /// -
+        ///     -
         /// </summary>
-        [Description("-")]
-        Minus
+        [Description("-")] Minus
     }
 }

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using Yunyong.Core;
 
-namespace Yunyong.DataExchange
+namespace Yunyong.Core
 {
-    public abstract class QueryOption:IQueryOption
+    public abstract class QueryOption : IQueryOption
     {
         /// <summary>
         ///     默认排序字段
