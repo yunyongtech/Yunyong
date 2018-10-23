@@ -324,6 +324,12 @@ namespace Yunyong.DataExchange.Core.Bases
                     DC.Compare = CompareEnum.None;
                     DC.AddConditions(DC.DH.InDic(fullName, tp.key, string.Empty, tp.val, tp.valType));
                 }
+                else if(tp.compare== CompareEnum.NotIn)
+                {
+                    DC.Option = OptionEnum.NotIn;
+                    DC.Compare = CompareEnum.None;
+                    DC.AddConditions(DC.DH.NotInDic(fullName, tp.key, string.Empty, tp.val, tp.valType));
+                }
                 else
                 {
                     DC.Option = OptionEnum.Compare;
@@ -353,6 +359,22 @@ namespace Yunyong.DataExchange.Core.Bases
             where M : class
         {
             var keyDic = DC.EH.FuncMFExpression(func)[0];
+            switch (orderBy)
+            {
+                case OrderByEnum.Asc:
+                    DC.Option = OptionEnum.Asc;
+                    break;
+                case OrderByEnum.Desc:
+                    DC.Option = OptionEnum.Desc;
+                    break;
+            }
+
+            DC.AddConditions(DC.DH.OrderbyDic(keyDic.ClassFullName, keyDic.ColumnOne));
+        }
+
+        internal void OrderByHandle<F>(Expression<Func<F>> func, OrderByEnum orderBy)
+        {
+            var keyDic = DC.EH.FuncMExpression(func)[0];
             switch (orderBy)
             {
                 case OrderByEnum.Asc:

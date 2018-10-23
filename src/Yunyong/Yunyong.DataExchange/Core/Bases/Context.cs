@@ -102,10 +102,23 @@ namespace Yunyong.DataExchange.Core.Bases
             return false;
         }
 
+        internal OptionEnum GetChangeOption(ChangeEnum change)
+        {
+            switch (change)
+            {
+                case ChangeEnum.Add:
+                    return OptionEnum.ChangeAdd;
+                case ChangeEnum.Minus:
+                    return OptionEnum.ChangeMinus;
+                default:
+                    return OptionEnum.ChangeAdd;
+            }
+        }
+
         internal void AddConditions(DicModelUI dic)
         {
             if (dic.CsValue!=null
-                && dic.Option == OptionEnum.In
+                && (dic.Option == OptionEnum.In || dic.Option== OptionEnum.NotIn)
                 && dic.CsValue.ToString().Contains(","))
             {
                 var vals = dic.CsValue.ToString().Split(',').Select(it => it);
@@ -117,7 +130,14 @@ namespace Yunyong.DataExchange.Core.Bases
                     var op = OptionEnum.None;
                     if (i == 1)
                     {
-                        op = OptionEnum.In;
+                        if (dic.Option == OptionEnum.In)
+                        {
+                            op = OptionEnum.In;
+                        }
+                        else if(dic.Option ==  OptionEnum.NotIn)
+                        {
+                            op = OptionEnum.NotIn;
+                        }
                     }
                     else
                     {
