@@ -51,7 +51,7 @@ namespace Yunyong.EventBus.EasyNetQ
 
             services.RegisterEasyNetQ(configuration);
 
-            return services.BuildAspectCoreServiceProvider();
+            return services.BuildAspectInjectorProvider();
         }
     }
 }
