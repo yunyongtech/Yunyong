@@ -5,6 +5,10 @@
     /// </summary>
     public abstract class PagingQueryOption : QueryOption
     {
+        public PagingQueryOption()
+        {
+            PageSize = PagingSetting.DefaultPageSize;
+        }
         /// <summary>
         ///     当前页
         /// </summary>
@@ -13,6 +17,6 @@
         /// <summary>
         ///     页面大小
         /// </summary>
-        public int PageSize { get; set; } = 10;
+        public int PageSize { get; set; }
     }
 }
