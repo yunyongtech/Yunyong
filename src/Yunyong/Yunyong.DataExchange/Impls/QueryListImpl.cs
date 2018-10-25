@@ -27,23 +27,42 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<List<VM>> QueryListAsync<VM>()
+            where VM:class
         {
             SelectMHandle<M, VM>();
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return (await DC.DS.ExecuteReaderMultiRowAsync<VM>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryListAsync)[0],
                 DC.SqlProvider.GetParameters())).ToList();
         }
 
-        public async Task<List<VM>> QueryListAsync<VM>(Expression<Func<M, VM>> func)
+        public async Task<List<VM>> QueryListAsync<VM>(Expression<Func<M, VM>> columnMapFunc)
+            where VM:class
         {
-            SelectMHandle(func);
-            DC.IP.ConvertDic();
+            SelectMHandle(columnMapFunc);
+            DC.DH.UiToDbCopy();
             return (await DC.DS.ExecuteReaderMultiRowAsync<VM>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryListAsync)[0],
                 DC.SqlProvider.GetParameters())).ToList();
+        }
+
+        public async Task<List<M>> QueryListAsync(int topCount)
+        {
+            return await new TopImpl<M>(DC).TopAsync(topCount);
+        }
+
+        public async Task<List<VM>> QueryListAsync<VM>(int topCount) 
+            where VM : class
+        {
+            return await new TopImpl<M>(DC).TopAsync<VM>(topCount);
+        }
+
+        public async Task<List<VM>> QueryListAsync<VM>(int topCount, Expression<Func<M, VM>> columnMapFunc) 
+            where VM : class
+        {
+            return await new TopImpl<M>(DC).TopAsync<VM>(topCount, columnMapFunc);
         }
     }
 
@@ -56,9 +75,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<List<M>> QueryListAsync<M>()
+            where M:class
         {
             SelectMHandle<M>();
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return (await DC.DS.ExecuteReaderMultiRowAsync<M>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.JoinQueryListAsync)[0],
@@ -66,9 +86,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<List<VM>> QueryListAsync<VM>(Expression<Func<VM>> func)
+            where VM:class
         {
             SelectMHandle(func);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return (await DC.DS.ExecuteReaderMultiRowAsync<VM>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<VM>(UiMethodEnum.JoinQueryListAsync)[0],

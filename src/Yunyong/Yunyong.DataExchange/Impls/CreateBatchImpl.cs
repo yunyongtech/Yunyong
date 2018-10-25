@@ -8,6 +8,7 @@ namespace Yunyong.DataExchange.Impls
 {
     internal class CreateBatchImpl<M>
         : Impler, ICreateBatch<M>
+        where M:class
     {
         internal CreateBatchImpl(Context dc) 
             : base(dc)
@@ -21,7 +22,7 @@ namespace Yunyong.DataExchange.Impls
             {
                 DC.ResetConditions();
                 CreateMHandle(list);
-                DC.IP.ConvertDic();
+                DC.DH.UiToDbCopy();
                 return await DC.DS.ExecuteNonQueryAsync(
                     DC.Conn,
                     DC.SqlProvider.GetSQL<M>(UiMethodEnum.CreateBatchAsync)[0],

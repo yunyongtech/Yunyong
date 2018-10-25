@@ -74,7 +74,21 @@ namespace Yunyong.DataExchange.Core.MySql
 
             if (DC.DbConditions.Any(it => it.Action == ActionEnum.OrderBy))
             {
-                str = string.Join(",", DC.DbConditions.Where(it => it.Action == ActionEnum.OrderBy).Select(it => $" `{it.ColumnOne}` {it.Option.ToEnumDesc<OptionEnum>()} "));
+                var list = new List<string>();
+                var orders = DC.DbConditions.Where(it => it.Action == ActionEnum.OrderBy);
+                foreach(var o in orders)
+                {
+                    if(o.Func== FuncEnum.None
+                        || o.Func== FuncEnum.Column)
+                    {
+                        list.Add($" `{o.ColumnOne}` {o.Option.ToEnumDesc<OptionEnum>()} ");
+                    }
+                    else if(o.Func== FuncEnum.CharLength)
+                    {
+                        list.Add($" {o.Func.ToEnumDesc<FuncEnum>()}(`{o.ColumnOne}`) {o.Option.ToEnumDesc<OptionEnum>()} ");
+                    }
+                }
+                str = string.Join(",", list);
             }
             else if (props.Any(it => "CreatedOn".Equals(it.Name, StringComparison.OrdinalIgnoreCase)))
             {
@@ -102,7 +116,21 @@ namespace Yunyong.DataExchange.Core.MySql
 
             if (DC.DbConditions.Any(it => it.Action == ActionEnum.OrderBy))
             {
-                str = string.Join(",", DC.DbConditions.Where(it => it.Action == ActionEnum.OrderBy).Select(it => $" {dic.TableAliasOne}.`{it.ColumnOne}` {it.Option.ToEnumDesc<OptionEnum>()} "));
+                var list = new List<string>();
+                var orders = DC.DbConditions.Where(it => it.Action == ActionEnum.OrderBy);
+                foreach (var o in orders)
+                {
+                    if (o.Func == FuncEnum.None
+                        || o.Func == FuncEnum.Column)
+                    {
+                        list.Add($" {o.TableAliasOne}.`{o.ColumnOne}` {o.Option.ToEnumDesc<OptionEnum>()} ");
+                    }
+                    else if (o.Func == FuncEnum.CharLength)
+                    {
+                        list.Add($" {o.Func.ToEnumDesc<FuncEnum>()}({o.TableAliasOne}.`{o.ColumnOne}`) {o.Option.ToEnumDesc<OptionEnum>()} ");
+                    }
+                }
+                str = string.Join(",", list);
             }
             else if (props.Any(it => "CreatedOn".Equals(it.Name, StringComparison.OrdinalIgnoreCase)))
             {
@@ -124,7 +152,20 @@ namespace Yunyong.DataExchange.Core.MySql
 
         private string Limit(int? pageIndex, int? pageSize)
         {
-            return $" \r\n limit {(pageIndex - 1) * pageSize},{pageSize}";
+            if (pageIndex.HasValue
+                && pageSize.HasValue)
+            {
+                var start = default(int);
+                if (pageIndex > 0)
+                {
+                    start = ((pageIndex - 1) * pageSize).ToInt();
+                }
+                return $" \r\n limit {start},{pageSize}";
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /****************************************************************************************************************/
@@ -271,7 +312,7 @@ namespace Yunyong.DataExchange.Core.MySql
                         str += $" \r\n \t {item.Action.ToEnumDesc<ActionEnum>()} {item.TableOne} as {item.TableAliasOne} ";
                         break;
                     case ActionEnum.On:
-                        str += $" {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}`={item.AliasTwo}.`{item.KeyTwo}` ";
+                        str += $" \r\n \t \t {item.Action.ToEnumDesc<ActionEnum>()} {item.TableAliasOne}.`{item.ColumnOne}`={item.AliasTwo}.`{item.KeyTwo}` ";
                         break;
                 }
             }
@@ -557,7 +598,8 @@ namespace Yunyong.DataExchange.Core.MySql
                     list.Add($" select {Columns()} {From()} {Joins()} {Wheres()} {GetOrderByPart()} ; ");
                     break;
                 case UiMethodEnum.QueryListAsync:
-                    list.Add($"select {Columns()} {From()} {Table<M>(type)} {Wheres()} {GetOrderByPart<M>()} ; ");
+                case UiMethodEnum.TopAsync:
+                    list.Add($"select {Columns()} {From()} {Table<M>(type)} {Wheres()} {GetOrderByPart<M>()} {Limit(pageIndex, pageSize)} ; ");
                     break;
                 case UiMethodEnum.JoinQueryListAsync:
                     list.Add($" select {Columns()} {From()} {Joins()} {Wheres()} {GetOrderByPart()} ; ");
@@ -574,7 +616,7 @@ namespace Yunyong.DataExchange.Core.MySql
                     list.Add($"select {Columns()} {From()} {Joins()} {wherePart9} {GetOrderByPart()} {Limit(pageIndex, pageSize)}  ; ");
                     break;
                 case UiMethodEnum.QueryAllAsync:
-                    list.Add($" select * {From()} {Table<M>(type)} {GetOrderByPart<M>()} ; ");
+                    list.Add($" select {Columns()} {From()} {Table<M>(type)} {GetOrderByPart<M>()} ; ");
                     break;
                 case UiMethodEnum.QueryAllPagingListAsync:
                     var table11 = Table<M>(type);

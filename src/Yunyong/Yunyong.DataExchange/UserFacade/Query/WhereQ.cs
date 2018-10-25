@@ -10,7 +10,7 @@ using Yunyong.DataExchange.Interfaces;
 namespace Yunyong.DataExchange.UserFacade.Query
 {
     public sealed class WhereQ<M>
-        : Operator, IExist, IQueryFirstOrDefault<M>, IQueryList<M>, IQueryPagingList<M>, IQueryPagingListO<M>, ICount<M>
+        : Operator, IExist, IQueryFirstOrDefault<M>, IQueryList<M>, IQueryPagingList<M>, IQueryPagingListO<M>, ICount<M>,ITop<M>
         where M : class
     {
         internal WhereQ(Context dc)
@@ -52,6 +52,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// </summary>
         /// <typeparam name="VM">ViewModel</typeparam>
         public async Task<VM> QueryFirstOrDefaultAsync<VM>()
+            where VM:class
         {
             return await new QueryFirstOrDefaultImpl<M>(DC).QueryFirstOrDefaultAsync<VM>();
         }
@@ -60,6 +61,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// </summary>
         /// <typeparam name="VM">ViewModel</typeparam>
         public async Task<VM> QueryFirstOrDefaultAsync<VM>(Expression<Func<M, VM>> columnMapFunc)
+            where VM:class
         {
             return await new QueryFirstOrDefaultImpl<M>(DC).QueryFirstOrDefaultAsync<VM>(columnMapFunc);
         }
@@ -76,6 +78,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// </summary>
         /// <typeparam name="VM">ViewModel</typeparam>
         public async Task<List<VM>> QueryListAsync<VM>()
+            where VM:class
         {
             return await new QueryListImpl<M>(DC).QueryListAsync<VM>();
         }
@@ -83,8 +86,32 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// 单表多条数据查询
         /// </summary>
         public async Task<List<VM>> QueryListAsync<VM>(Expression<Func<M, VM>> columnMapFunc)
+            where VM:class
         {
             return await new QueryListImpl<M>(DC).QueryListAsync<VM>(columnMapFunc);
+        }
+        /// <summary>
+        /// 单表多条数据查询
+        /// </summary>
+        public async Task<List<M>> QueryListAsync(int topCount)
+        {
+            return await new QueryListImpl<M>(DC).QueryListAsync(topCount);
+        }
+        /// <summary>
+        /// 单表多条数据查询
+        /// </summary>
+        public async Task<List<VM>> QueryListAsync<VM>(int topCount) 
+            where VM : class
+        {
+            return await new QueryListImpl<M>(DC).QueryListAsync<VM>(topCount);
+        }
+        /// <summary>
+        /// 单表多条数据查询
+        /// </summary>
+        public async Task<List<VM>> QueryListAsync<VM>(int topCount, Expression<Func<M, VM>> columnMapFunc) 
+            where VM : class
+        {
+            return await new QueryListImpl<M>(DC).QueryListAsync<VM>(topCount, columnMapFunc);
         }
 
         /// <summary>
@@ -103,6 +130,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(int pageIndex, int pageSize)
+            where VM:class
         {
             return await new QueryPagingListImpl<M>(DC).QueryPagingListAsync<VM>(pageIndex, pageSize);
         }
@@ -113,6 +141,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(int pageIndex, int pageSize, Expression<Func<M, VM>> columnMapFunc)
+            where VM:class
         {
             return await new QueryPagingListImpl<M>(DC).QueryPagingListAsync<VM>(pageIndex, pageSize, columnMapFunc);
         }
@@ -133,6 +162,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(PagingQueryOption option)
+            where VM:class
         {
             return await new QueryPagingListOImpl<M>(DC).QueryPagingListAsync<VM>(option);
         }
@@ -143,9 +173,41 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(PagingQueryOption option, Expression<Func<M, VM>> columnMapFunc)
+            where VM:class
         {
             return await new QueryPagingListOImpl<M>(DC).QueryPagingListAsync<VM>(option, columnMapFunc);
         }
+
+        /// <summary>
+        /// 单表数据查询
+        /// </summary>
+        /// <param name="count">top count</param>
+        /// <returns>返回 top count 条数据</returns>
+        public async Task<List<M>> TopAsync(int count)
+        {
+            return await new TopImpl<M>(DC).TopAsync(count);
+        }
+        /// <summary>
+        /// 单表数据查询
+        /// </summary>
+        /// <param name="count">top count</param>
+        /// <returns>返回 top count 条数据</returns>
+        public async Task<List<VM>> TopAsync<VM>(int count)
+            where VM : class
+        {
+            return await new TopImpl<M>(DC).TopAsync<VM>(count);
+        }
+        /// <summary>
+        /// 单表数据查询
+        /// </summary>
+        /// <param name="count">top count</param>
+        /// <returns>返回 top count 条数据</returns>
+        public async Task<List<VM>> TopAsync<VM>(int count, Expression<Func<M, VM>> columnMapFunc)
+            where VM : class
+        {
+            return await new TopImpl<M>(DC).TopAsync<VM>(count, columnMapFunc);
+        }
+
 
     }
 }

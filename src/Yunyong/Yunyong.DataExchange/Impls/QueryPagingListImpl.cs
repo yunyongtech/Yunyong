@@ -20,18 +20,20 @@ namespace Yunyong.DataExchange.Impls
 
         public async Task<PagingList<M>> QueryPagingListAsync(int pageIndex, int pageSize)
         {
-            return await QueryPagingListAsyncHandle<M, M>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
+            return await QueryPagingListAsyncHandle<M>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
         }
 
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(int pageIndex, int pageSize)
+            where VM:class
         {
             return await QueryPagingListAsyncHandle<M, VM>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
         }
 
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(int pageIndex, int pageSize, Expression<Func<M, VM>> func)
+            where VM:class
         {
             SelectMHandle(func);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return await QueryPagingListAsyncHandle<M, VM>(pageIndex, pageSize, UiMethodEnum.QueryPagingListAsync);
         }
     }
@@ -48,23 +50,25 @@ namespace Yunyong.DataExchange.Impls
         public async Task<PagingList<M>> QueryPagingListAsync(PagingQueryOption option)
         {
             OrderByOptionHandle(option, typeof(M).FullName);
-            DC.IP.ConvertDic();
-            return await QueryPagingListAsyncHandle<M, M>(option.PageIndex, option.PageSize, UiMethodEnum.QueryPagingListAsync);
+            DC.DH.UiToDbCopy();
+            return await QueryPagingListAsyncHandle<M>(option.PageIndex, option.PageSize, UiMethodEnum.QueryPagingListAsync);
         }
 
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(PagingQueryOption option)
+            where VM:class
         {
             SelectMHandle<M, VM>();
             OrderByOptionHandle(option, typeof(M).FullName);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return await QueryPagingListAsyncHandle<M, VM>(option.PageIndex, option.PageSize, UiMethodEnum.QueryPagingListAsync);
         }
 
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(PagingQueryOption option, Expression<Func<M, VM>> func)
+            where VM:class
         {
             SelectMHandle(func);
             OrderByOptionHandle(option, typeof(M).FullName);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return await QueryPagingListAsyncHandle<M, VM>(option.PageIndex, option.PageSize, UiMethodEnum.QueryPagingListAsync);
         }
     }
@@ -78,9 +82,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<PagingList<M>> QueryPagingListAsync<M>(int pageIndex, int pageSize)
+            where M:class
         {
             SelectMHandle<M>();
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             var result = new PagingList<M>();
             result.PageIndex = pageIndex;
             result.PageSize = pageSize;
@@ -92,9 +97,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(int pageIndex, int pageSize, Expression<Func<VM>> func)
+            where VM:class
         {
             SelectMHandle(func);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             var result = new PagingList<VM>();
             result.PageIndex = pageIndex;
             result.PageSize = pageSize;
@@ -115,10 +121,11 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<PagingList<M>> QueryPagingListAsync<M>(PagingQueryOption option)
+            where M:class
         {
             SelectMHandle<M>();
             OrderByOptionHandle(option, typeof(M).FullName);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             var result = new PagingList<M>();
             result.PageIndex = option.PageIndex;
             result.PageSize = option.PageSize;
@@ -130,10 +137,11 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<PagingList<VM>> QueryPagingListAsync<VM>(PagingQueryOption option, Expression<Func<VM>> func)
+            where VM:class
         {
             SelectMHandle(func);
             OrderByOptionHandle(option, string.Empty);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             var result = new PagingList<VM>();
             result.PageIndex = option.PageIndex;
             result.PageSize = option.PageSize;

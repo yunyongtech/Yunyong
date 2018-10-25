@@ -369,12 +369,12 @@ namespace Yunyong.DataExchange.Core.Bases
                     break;
             }
 
-            DC.AddConditions(DC.DH.OrderbyDic(keyDic.ClassFullName, keyDic.ColumnOne));
+            DC.AddConditions(DC.DH.OrderbyDic(keyDic.ClassFullName, keyDic.ColumnOne,keyDic.TableAliasOne));
         }
 
         internal void OrderByHandle<F>(Expression<Func<F>> func, OrderByEnum orderBy)
         {
-            var keyDic = DC.EH.FuncMExpression(func)[0];
+            var keyDic = DC.EH.FuncTExpression(func)[0];
             switch (orderBy)
             {
                 case OrderByEnum.Asc:
@@ -385,7 +385,7 @@ namespace Yunyong.DataExchange.Core.Bases
                     break;
             }
 
-            DC.AddConditions(DC.DH.OrderbyDic(keyDic.ClassFullName, keyDic.ColumnOne));
+            DC.AddConditions(DC.DH.OrderbyDic(keyDic.ClassFullName, keyDic.ColumnOne,keyDic.TableAliasOne));
         }
 
         protected void OrderByOptionHandle(PagingQueryOption option, string fullName)
@@ -407,7 +407,7 @@ namespace Yunyong.DataExchange.Core.Bases
                             DC.Option = OptionEnum.Asc;
                         }
                         DC.Compare = CompareEnum.None;
-                        DC.AddConditions(DC.DH.OrderbyDic(fullName, item.Field));
+                        DC.AddConditions(DC.DH.OrderbyDic(fullName, item.Field, string.Empty));
                     }
                 }
             }

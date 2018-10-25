@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Core.Helper;
 
 namespace Yunyong.DataExchange.Cache
@@ -15,9 +16,9 @@ namespace Yunyong.DataExchange.Cache
 
         private static Hashtable byType { get; } = new Hashtable();
         private Type type { get; }
-       
 
-        internal static Func<IDataReader, object> GetReader(Type type, IDataReader reader, int startBound, int length, bool returnNullIfFirstMissing)
+
+        internal static Func<IDataReader, object> GetReader(Type type, IDataReader reader)
         {
             var found = (TypeDeserializerCache)byType[type];
             if (found == null)
@@ -31,26 +32,19 @@ namespace Yunyong.DataExchange.Cache
                     }
                 }
             }
-            return found.GetReader(reader, startBound, length, returnNullIfFirstMissing);
+            return found.GetReader(reader);
         }
 
         private Dictionary<DeserializerKey, Func<IDataReader, object>> readers { get; } = new Dictionary<DeserializerKey, Func<IDataReader, object>>();
 
 
 
-        private Func<IDataReader, object> GetReader(IDataReader reader, int startBound, int length, bool returnNullIfFirstMissing)
+        private Func<IDataReader, object> GetReader(IDataReader reader)
         {
-            if (length < 0)
-            {
-                length = reader.FieldCount - startBound;
-            }
-            int hash = AdoNetHelper. GetColumnHash(reader, startBound, length);
-            if (returnNullIfFirstMissing)
-            {
-                hash *= -27;
-            }
+            var length = reader.FieldCount;
+            int hash = AdoNetHelper.GetColumnHash(reader);
             // get a cheap key first: false means don't copy the values down
-            var key = new DeserializerKey(hash, startBound, length, returnNullIfFirstMissing, reader, false);
+            var key = new DeserializerKey(hash, length, reader, false);
             Func<IDataReader, object> deser;
             lock (readers)
             {
@@ -59,9 +53,9 @@ namespace Yunyong.DataExchange.Cache
                     return deser;
                 }
             }
-            deser = AdoNetHelper. GetTypeDeserializerImpl(type, reader, startBound, length, returnNullIfFirstMissing);
+            deser = IL.Row(type, reader).Handle;
             // get a more expensive key: true means copy the values down so it can be used as a key later
-            key = new DeserializerKey(hash, startBound, length, returnNullIfFirstMissing, reader, true);
+            key = new DeserializerKey(hash, length, reader, true);
             lock (readers)
             {
                 readers[key] = deser;

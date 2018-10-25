@@ -4,62 +4,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Yunyong.Core;
-using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
-using Yunyong.DataExchange.Core.Extensions;
 
 namespace Yunyong.DataExchange.Core.Bases
 {
     internal abstract class Impler
         : Operator
     {
-
-        /**********************************************************************************************************/
-
-        internal void ConvertDic()
-        {
-            if (DC.UiConditions != null)
-            {
-                foreach (var ui in DC.UiConditions)
-                {
-                    if (DC.DbConditions.Any(dm => dm.ID == ui.ID))
-                    {
-                        continue;
-                    }
-
-                    var db = new DicModelDB();
-
-                    //
-                    db.ID = ui.ID;
-                    db.Crud = ui.Crud;
-                    db.Action = ui.Action;
-                    db.Option = ui.Option;
-                    db.Compare = ui.Compare;
-
-                    //
-                    if (ui.ClassFullName.IsNullStr())
-                    {
-                        db.Key = string.Empty;
-                    }
-                    else
-                    {
-                        db.Key = DC.SC.GetKey(ui.ClassFullName, DC.Conn.Database);
-                        db.TableOne = DC.SC.GetModelTableName(db.Key); //ui.TableOne;
-                    }
-                    db.TableAliasOne = ui.TableAliasOne;
-                    db.ColumnOne = ui.ColumnOne;
-                    db.KeyTwo = ui.ColumnTwo;
-                    db.AliasTwo = ui.TableAliasTwo;
-                    db.ColumnAlias = ui.ColumnOneAlias;
-                    db.Param = ui.Param;
-                    db.ParamRaw = ui.ParamRaw;
-                    db.TvpIndex = ui.TvpIndex;
-                    DC.PH.GetDbVal(ui, db, ui.CsType);
-                    DC.DbConditions.Add(db);
-                }
-            }
-        }
-
         /**********************************************************************************************************/
 
         private void SetInsertValue<M>(M m, int index)
@@ -79,6 +30,18 @@ namespace Yunyong.DataExchange.Core.Bases
         }
 
         /**********************************************************************************************************/
+
+        protected async Task<PagingList<M>> QueryPagingListAsyncHandle<M>(int pageIndex, int pageSize, UiMethodEnum sqlType)
+        {
+            var result = new PagingList<M>();
+            result.PageIndex = pageIndex;
+            result.PageSize = pageSize;
+            var paras = DC.SqlProvider.GetParameters();
+            var sql = DC.SqlProvider.GetSQL<M>(sqlType, result.PageIndex, result.PageSize);
+            result.TotalCount = await DC.DS.ExecuteScalarAsync<int>(DC.Conn, sql[0], paras);
+            result.Data = (await DC.DS.ExecuteReaderMultiRowAsync<M>(DC.Conn, sql[1], paras)).ToList();
+            return result;
+        }
 
         protected async Task<PagingList<VM>> QueryPagingListAsyncHandle<M, VM>(int pageIndex, int pageSize, UiMethodEnum sqlType)
         {
@@ -161,7 +124,7 @@ namespace Yunyong.DataExchange.Core.Bases
         internal void SelectMHandle<VM>(Expression<Func<VM>> func)
         {
             DC.Action = ActionEnum.Select;
-            var list = DC.EH.FuncMExpression(func);
+            var list = DC.EH.FuncTExpression(func);
             foreach (var dic in list)
             {
                 dic.Option = OptionEnum.ColumnAs;
@@ -205,7 +168,7 @@ namespace Yunyong.DataExchange.Core.Bases
             : base(dc)
         {
             DC.IP = this;
-            ConvertDic();
+            DC.DH.UiToDbCopy();
         }
     }
 }

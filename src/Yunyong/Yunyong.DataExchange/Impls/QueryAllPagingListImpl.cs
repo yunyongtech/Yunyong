@@ -8,6 +8,7 @@ namespace Yunyong.DataExchange.Impls
 {
     internal class QueryAllPagingListImpl<M>
         : Impler, IQueryAllPagingList<M>
+        where M:class
     {
         internal QueryAllPagingListImpl(Context dc) 
             : base(dc)
@@ -16,10 +17,11 @@ namespace Yunyong.DataExchange.Impls
 
         public async Task<PagingList<M>> QueryAllPagingListAsync(int pageIndex, int pageSize)
         {
-            return await QueryPagingListAsyncHandle<M, M>(pageIndex, pageSize, UiMethodEnum.QueryAllPagingListAsync);
+            return await QueryPagingListAsyncHandle<M>(pageIndex, pageSize, UiMethodEnum.QueryAllPagingListAsync);
         }
 
         public async Task<PagingList<VM>> QueryAllPagingListAsync<VM>(int pageIndex, int pageSize)
+            where VM:class
         {
             return await QueryPagingListAsyncHandle<M, VM>(pageIndex, pageSize, UiMethodEnum.QueryAllPagingListAsync);
         }

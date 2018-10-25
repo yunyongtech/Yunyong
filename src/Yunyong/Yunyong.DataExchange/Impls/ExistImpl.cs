@@ -7,6 +7,7 @@ namespace Yunyong.DataExchange.Impls
 {
     internal class ExistImpl<M>
         : Impler, IExist
+        where M:class
     {
         internal ExistImpl(Context dc) 
             : base(dc)
@@ -20,7 +21,7 @@ namespace Yunyong.DataExchange.Impls
             DC.Option = OptionEnum.Count;
             DC.Compare = CompareEnum.None;
             DC.AddConditions(DC.DH.CountDic(typeof(M).FullName, "*"));
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             var count = await DC.DS.ExecuteScalarAsync<long>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.ExistAsync)[0],

@@ -26,10 +26,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<VM> QueryFirstOrDefaultAsync<VM>()
+            where VM:class
         {
             SelectMHandle<M, VM>();
-            DC.IP.ConvertDic();
-            //return await QueryFirstOrDefaultAsyncHandle<M, VM>();
+            DC.DH.UiToDbCopy();
             return await DC.DS.ExecuteReaderSingleRowAsync<VM>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryFirstOrDefaultAsync)[0],
@@ -37,10 +37,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<VM> QueryFirstOrDefaultAsync<VM>(Expression<Func<M, VM>> func)
+            where VM:class
         {
             SelectMHandle(func);
-            DC.IP.ConvertDic();
-            //return await QueryFirstOrDefaultAsyncHandle<M, VM>();
+            DC.DH.UiToDbCopy();
             return await DC.DS.ExecuteReaderSingleRowAsync<VM>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryFirstOrDefaultAsync)[0],
@@ -57,9 +57,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<M> QueryFirstOrDefaultAsync<M>()
+            where M:class
         {
             SelectMHandle<M>();
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return await DC.DS.ExecuteReaderSingleRowAsync<M>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.JoinQueryFirstOrDefaultAsync)[0],
@@ -67,9 +68,10 @@ namespace Yunyong.DataExchange.Impls
         }
 
         public async Task<VM> QueryFirstOrDefaultAsync<VM>(Expression<Func<VM>> func)
+            where VM:class
         {
             SelectMHandle(func);
-            DC.IP.ConvertDic();
+            DC.DH.UiToDbCopy();
             return await DC.DS.ExecuteReaderSingleRowAsync<VM>(
                 DC.Conn,
                 DC.SqlProvider.GetSQL<VM>(UiMethodEnum.JoinQueryFirstOrDefaultAsync)[0],
