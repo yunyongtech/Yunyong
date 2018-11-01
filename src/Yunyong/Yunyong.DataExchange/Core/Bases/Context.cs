@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using Yunyong.DataExchange.AdoNet;
@@ -5,7 +6,7 @@ using Yunyong.DataExchange.Cache;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
 using Yunyong.DataExchange.Core.Helper;
-using Yunyong.DataExchange.Core.MySql;
+using Yunyong.DataExchange.DBRainbow.MySQL;
 
 namespace Yunyong.DataExchange.Core.Bases
 {
@@ -16,19 +17,38 @@ namespace Yunyong.DataExchange.Core.Bases
 
         internal void Init(IDbConnection conn)
         {
+            //
+            if (XConfig.DB == DbEnum.None)
+            {
+                if (XConfig.MySQL.Equals(conn.GetType().FullName, StringComparison.OrdinalIgnoreCase))
+                {
+                    XConfig.DB = DbEnum.MySQL;
+                }
+                else
+                {
+                    throw new Exception("MyDAL 目前只支持 【MySQL】,后续将会支持【Oracle/SQLServer/PostgreSQL/DB2/Access/SQLite/Teradata/MariaDB】.");
+                }
+            }
+
+            //
             Conn = conn;
-            UiConditions = new List<DicModelUI>();
-            DbConditions = new List<DicModelDB>();
+            UiConditions = new List<DicUI>();
+            DbConditions = new List<DicDB>();
             AH = new AttributeHelper(this);
             VH = new CsValueHelper(this);
-            GH = GenericHelper.Instance;
+            GH = new GenericHelper(this);
             EH = new XExpression(this);
             SC = new StaticCache(this);
             PH = new ParameterHelper(this);
-            BDH = BatchDataHelper.Instance;
-            SqlProvider = new MySqlProvider(this);
-            DS = DataSource.Instance;
             DH = new DicModelHelper(this);
+            BDH = new BatchDataHelper();
+            DS = new DataSource();
+
+            //
+            if (XConfig.DB == DbEnum.MySQL)
+            {
+                SqlProvider = new MySqlProvider(this);
+            }
         }
 
         /************************************************************************************************************************/
@@ -39,8 +59,6 @@ namespace Yunyong.DataExchange.Core.Bases
         internal BatchDataHelper BDH { get; private set; }
 
         /************************************************************************************************************************/
-
-        internal XDebug Hint { get; set; }
 
         internal XExpression EH { get; private set; }
         internal CsValueHelper VH { get; private set; }
@@ -56,8 +74,9 @@ namespace Yunyong.DataExchange.Core.Bases
 
         /************************************************************************************************************************/
 
-        internal List<DicModelUI> UiConditions { get; private set; }
-        internal List<DicModelDB> DbConditions { get; private set; }
+        internal int DicID { get; set; } = 1;
+        internal List<DicUI> UiConditions { get; private set; }
+        internal List<DicDB> DbConditions { get; private set; }
 
         /************************************************************************************************************************/
 
@@ -66,7 +85,7 @@ namespace Yunyong.DataExchange.Core.Bases
 
         /************************************************************************************************************************/
 
-        internal MySqlProvider SqlProvider { get; set; }
+        internal ISqlProvider SqlProvider { get; set; }
         internal Operator OP { get; set; }
         internal Impler IP { get; set; }
 
@@ -77,9 +96,18 @@ namespace Yunyong.DataExchange.Core.Bases
 
         /************************************************************************************************************************/
 
-        internal bool IsParameter(DicModelUI item)
+        internal bool IsInParameter(object value, OptionEnum option)
         {
-            switch (item.Action)
+            if (value != null
+                && (option == OptionEnum.In || option == OptionEnum.NotIn))
+            {
+                return true;
+            }
+            return false;
+        }
+        internal bool IsParameter(ActionEnum action)
+        {
+            switch (action)
             {
                 case ActionEnum.Insert:
                 case ActionEnum.Update:
@@ -90,18 +118,122 @@ namespace Yunyong.DataExchange.Core.Bases
             }
             return false;
         }
-        internal bool IsParameter(DicModelDB item)
+        internal bool IsFilterCondition(ActionEnum action)
         {
-            switch (item.Action)
+            switch (action)
             {
-                case ActionEnum.Insert:
-                case ActionEnum.Update:
                 case ActionEnum.Where:
                 case ActionEnum.And:
                 case ActionEnum.Or:
                     return true;
             }
             return false;
+        }
+        internal bool IsSingleTableOption(CrudTypeEnum crud)
+        {
+            switch (crud)
+            {
+                case CrudTypeEnum.Query:
+                case CrudTypeEnum.Update:
+                case CrudTypeEnum.Delete:
+                    return true;
+            }
+            return false;
+        }
+
+        /************************************************************************************************************************/
+
+        private List<DicUI> FlatDics(List<DicUI> dics)
+        {
+            var ds = new List<DicUI>();
+
+            //
+            foreach (var d in dics)
+            {
+                if (IsParameter(d.Action))
+                {
+                    if (d.Group != null)
+                    {
+                        ds.AddRange(FlatDics(d.Group));
+                    }
+                    else if (d.InItems != null)
+                    {
+                        ds.AddRange(FlatDics(d.InItems));
+                    }
+                    else
+                    {
+                        ds.Add(d);
+                    }
+                }
+            }
+
+            //
+            return ds;
+        }
+        private List<DicDB> FlatDics(List<DicDB> dics)
+        {
+            var ds = new List<DicDB>();
+
+            //
+            foreach (var d in dics)
+            {
+                if (IsParameter(d.Action))
+                {
+                    if (d.Group != null)
+                    {
+                        ds.AddRange(FlatDics(d.Group));
+                    }
+                    else if (d.InItems != null)
+                    {
+                        ds.AddRange(FlatDics(d.InItems));
+                    }
+                    else
+                    {
+                        ds.Add(d);
+                    }
+                }
+            }
+
+            //
+            return ds;
+        }
+        internal DbParameters GetParameters(List<DicDB> dbs)
+        {
+            var paras = new DbParameters();
+
+            //
+            foreach (var db in dbs)
+            {
+                if (IsParameter(db.Action))
+                {
+                    if (db.Group != null)
+                    {
+                        paras.Add(GetParameters(db.Group));
+                    }
+                    else if (IsInParameter(db.DbValue, db.Option))
+                    {
+                        paras.Add(GetParameters(db.InItems));
+                    }
+                    else
+                    {
+                        paras.Add(db.Param, db.DbValue, db.DbType);
+                    }
+                }
+            }
+
+            //
+            if (XConfig.IsDebug)
+            {
+                lock (XDebug.Lock)
+                {
+                    XDebug.UIs = FlatDics(UiConditions);
+                    XDebug.DBs = FlatDics(DbConditions);
+                    XDebug.SetValue();
+                }
+            }
+
+            //
+            return paras;
         }
 
         internal OptionEnum GetChangeOption(ChangeEnum change)
@@ -117,18 +249,18 @@ namespace Yunyong.DataExchange.Core.Bases
             }
         }
 
-        internal void AddConditions(DicModelUI dic)
+        internal void AddConditions(DicUI dic)
         {
-            if (dic.CsValue != null
-                && (dic.Option == OptionEnum.In || dic.Option == OptionEnum.NotIn)
-                && dic.CsValue.ToString().Contains(","))
+            if (IsInParameter(dic.CsValue, dic.Option))
             {
-                DH.InNotInDicProcess(dic);
+                dic.InItems = new List<DicUI>();
+                DH.UniqueDicContext(dic, dic.InItems);
             }
             else
             {
-                DH.DicAddContext(dic);
+                DH.UniqueDicContext(dic, UiConditions);
             }
+            UiConditions.Add(dic);
 
             //
             Compare = CompareEnum.None;
@@ -137,8 +269,8 @@ namespace Yunyong.DataExchange.Core.Bases
 
         internal void ResetConditions()
         {
-            UiConditions = new List<DicModelUI>();
-            DbConditions = new List<DicModelDB>();
+            UiConditions = new List<DicUI>();
+            DbConditions = new List<DicDB>();
         }
 
         internal void SetMTCache<M>()

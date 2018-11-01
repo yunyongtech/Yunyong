@@ -7,7 +7,7 @@ using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Helper;
-using Yunyong.DataExchange.Core.MySql.Models;
+using Yunyong.DataExchange.DBRainbow;
 
 namespace Yunyong.DataExchange.Cache
 {
@@ -66,7 +66,7 @@ namespace Yunyong.DataExchange.Cache
         {
             if (!AssemblyCache.TryGetValue(key, out var ass))
             {
-                ass = GenericHelper.Instance.LoadAssembly(key.Split(':')[1]);
+                ass =  new GenericHelper(DC).LoadAssembly(key.Split(':')[1]);
                 AssemblyCache[key] = ass;
             }
             return ass;
