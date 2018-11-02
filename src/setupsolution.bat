@@ -35,6 +35,7 @@ dotnet add %1.EventHandlers reference %1.Models
 del %1.EventHandlers\Class1.cs
 
 dotnet new classlib -n %1.Services
+dotnet add %1.Services package Yunyong.DataExchange
 dotnet add %1.Services package Yunyong.SqlUtils
 dotnet add %1.Services reference %1.Services.Abstractions
 dotnet add %1.Services reference %1.Events
