@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Yunyong.DataExchange.AdoNet;
-using Yunyong.DataExchange.Cache;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
 using Yunyong.DataExchange.Core.Helper;
@@ -37,11 +36,11 @@ namespace Yunyong.DataExchange.Core.Bases
             VH = new CsValueHelper(this);
             GH = new GenericHelper(this);
             EH = new XExpression(this);
-            SC = new StaticCache(this);
+            SC = new XCache(this);
             PH = new ParameterHelper(this);
             DPH = new DicParamHelper(this);
             BDH = new BatchDataHelper();
-            DS = new DataSource();
+            DS = new DataSource(this);
 
             //
             if (XConfig.DB == DbEnum.MySQL)
@@ -70,11 +69,17 @@ namespace Yunyong.DataExchange.Core.Bases
         internal OptionEnum Option { get; set; } = OptionEnum.None;
         internal CompareEnum Compare { get; set; } = CompareEnum.None;
         internal FuncEnum Func { get; set; } = FuncEnum.None;
+        internal UiMethodEnum Method { get; set; } = UiMethodEnum.None;
 
         /************************************************************************************************************************/
 
+        internal bool NeedSetSingle { get; set; } = true;
+        internal string SingleOpName { get; set; }
         internal int DicID { get; set; } = 1;
         internal List<DicParam> Parameters { get; set; }
+        internal List<string> SQL { get; set; }
+        internal int? PageIndex { get; set; } = null;
+        internal int? PageSize { get; set; } = null;
 
         /************************************************************************************************************************/
 
@@ -89,7 +94,7 @@ namespace Yunyong.DataExchange.Core.Bases
 
         /************************************************************************************************************************/
 
-        internal StaticCache SC { get; private set; }
+        internal XCache SC { get; private set; }
         internal DataSource DS { get; private set; }
 
         /************************************************************************************************************************/
@@ -127,13 +132,14 @@ namespace Yunyong.DataExchange.Core.Bases
             }
             return false;
         }
-        internal bool IsSingleTableOption(CrudTypeEnum crud)
+        internal bool IsSingleTableOption()
         {
-            switch (crud)
+            switch (Crud)
             {
                 case CrudTypeEnum.Query:
                 case CrudTypeEnum.Update:
                 case CrudTypeEnum.Delete:
+                case CrudTypeEnum.Create:
                     return true;
             }
             return false;
@@ -159,6 +165,11 @@ namespace Yunyong.DataExchange.Core.Bases
             //
             var type = typeof(M);
             var key = SC.GetModelKey(type.FullName);
+            if (NeedSetSingle)
+            {
+                SingleOpName = type.FullName;
+                NeedSetSingle = false;
+            }
 
             //
             var table = SqlProvider.GetTableName<M>();

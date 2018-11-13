@@ -9,7 +9,8 @@ using Yunyong.DataExchange.Core.Helper;
 
 namespace Yunyong.DataExchange.AdoNet
 {
-    internal struct IL
+    internal struct IL<M>
+        where M:class
     {
         private static void EmitInt32(ILGenerator il, int value)
         {
@@ -233,9 +234,10 @@ namespace Yunyong.DataExchange.AdoNet
             }
             return s[0];
         }
-        private static Func<IDataReader, object> SetFunc(Type mType, IDataReader reader)
+        private static Func<IDataReader, M> SetFunc(IDataReader reader)
         {
             // 
+            var mType = typeof(M);
             var dm = new DynamicMethod("MyDAL" + Guid.NewGuid().ToString(), mType, new[] { typeof(IDataReader) }, mType, true);
             var il = dm.GetILGenerator();
             il.DeclareLocal(typeof(int));    // 定义 loc0  int
@@ -246,7 +248,7 @@ namespace Yunyong.DataExchange.AdoNet
             //
             var length = reader.FieldCount;
             var names = Enumerable.Range(0, length).Select(i => reader.GetName(i)).ToArray();
-            var typeMap = AdoNetHelper.GetTypeMap(mType);
+            var typeMap = XSQL.GetTypeMap(mType);
             int index = 0;
             var ctor = typeMap.DefaultConstructor();
 
@@ -284,7 +286,7 @@ namespace Yunyong.DataExchange.AdoNet
                     {
                         il.EmitCall(
                             OpCodes.Call, 
-                            typeof(AdoNetHelper).GetMethod(
+                            typeof(XSQL).GetMethod(
                                 memberType == typeof(char) 
                                 ? nameof(ReadChar) 
                                 : nameof(ReadNullableChar), BindingFlags.Static | BindingFlags.NonPublic),
@@ -353,7 +355,7 @@ namespace Yunyong.DataExchange.AdoNet
                     // Store the value in the property/field
                     if (item.Property != null)
                     {
-                        il.Emit(OpCodes.Callvirt, AdoNetHelper.GetPropertySetter(item.Property, mType));
+                        il.Emit(OpCodes.Callvirt, XSQL.GetPropertySetter(item.Property, mType));
                     }
                     else
                     {
@@ -376,21 +378,21 @@ namespace Yunyong.DataExchange.AdoNet
             il.Emit(OpCodes.Ldloc_0); // stack is Exception, index
             il.Emit(OpCodes.Ldarg_0); // stack is Exception, index, reader
             LoadLocal(il, valueCopyLocal); // stack is Exception, index, reader, value
-            il.EmitCall(OpCodes.Call, typeof(AdoNetHelper).GetMethod(nameof(AdoNetHelper.ThrowDataException)), null);
+            il.EmitCall(OpCodes.Call, typeof(XSQL).GetMethod(nameof(XSQL.ThrowDataException)), null);
             il.EndExceptionBlock();
 
             il.Emit(OpCodes.Ldloc_1); // stack is [rval]
             il.Emit(OpCodes.Ret);
 
             var funcType = Expression.GetFuncType(typeof(IDataReader), mType);
-            return (Func<IDataReader, object>)dm.CreateDelegate(funcType);
+            return (Func<IDataReader, M>)dm.CreateDelegate(funcType);
         }
 
-        internal static Row Row(Type mType, IDataReader reader)
+        internal static Row<M> Row(IDataReader reader)
         {
-            return new Row
+            return new Row<M>
             {
-                Handle = SetFunc(mType, reader)
+                Handle = SetFunc(reader)
             };
         }
     }

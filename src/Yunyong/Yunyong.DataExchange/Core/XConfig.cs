@@ -29,6 +29,9 @@ namespace Yunyong.DataExchange.Core
 
         internal static MethodInfo EnumParse { get; } = typeof(Enum).GetMethod(nameof(Enum.Parse), new Type[] { typeof(Type), typeof(string), typeof(bool) });
 
+        internal static CommandBehavior MultiRow { get; } = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
+        internal static CommandBehavior SingleRow { get; } = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow;
+
         /************************************************************************************************************/
 
         internal static Type Bool { get; private set; } = typeof(bool);
@@ -71,6 +74,10 @@ namespace Yunyong.DataExchange.Core
             .Where(p => p.GetIndexParameters().Length > 0 && p.GetIndexParameters()[0].ParameterType == typeof(int))
             .Select(p => p.GetGetMethod())
             .First();
+
+        /************************************************************************************************************/
+
+        internal static string _001 { get; } = "001";
 
         /************************************************************************************************************/
 

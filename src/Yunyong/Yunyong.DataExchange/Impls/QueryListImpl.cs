@@ -20,10 +20,9 @@ namespace Yunyong.DataExchange.Impls
 
         public async Task<List<M>> QueryListAsync()
         {
-            return await DC.DS.ExecuteReaderMultiRowAsync<M>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryListAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.QueryListAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderMultiRowAsync<M>();
         }
 
         public async Task<List<VM>> QueryListAsync<VM>()
@@ -31,10 +30,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle<M, VM>();
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderMultiRowAsync<VM>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryListAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.QueryListAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderMultiRowAsync<VM>();
         }
 
         public async Task<List<VM>> QueryListAsync<VM>(Expression<Func<M, VM>> columnMapFunc)
@@ -42,10 +40,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle(columnMapFunc);
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderMultiRowAsync<VM>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryListAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.QueryListAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderMultiRowAsync<VM>();
         }
 
         public async Task<List<M>> QueryListAsync(int topCount)
@@ -79,10 +76,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle<M>();
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderMultiRowAsync<M>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.JoinQueryListAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.JoinQueryListAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderMultiRowAsync<M>();
         }
 
         public async Task<List<VM>> QueryListAsync<VM>(Expression<Func<VM>> columnMapFunc)
@@ -90,10 +86,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle(columnMapFunc);
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderMultiRowAsync<VM>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<VM>(UiMethodEnum.JoinQueryListAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.JoinQueryListAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderMultiRowAsync<VM>();
         }
 
         public async Task<List<M>> QueryListAsync<M>(int topCount) 

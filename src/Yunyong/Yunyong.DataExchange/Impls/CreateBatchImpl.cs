@@ -18,15 +18,14 @@ namespace Yunyong.DataExchange.Impls
         public async Task<int> CreateBatchAsync(IEnumerable<M> mList)
         {
             DC.Action = ActionEnum.Insert;
-            return await DC.BDH.StepProcess(mList, 35, async list =>
+            return await DC.BDH.StepProcess(mList, 100, async list =>
             {
                 DC.DPH.ResetParameter();
                 CreateMHandle(list);
                 DC.DPH.SetParameter();
-                return await DC.DS.ExecuteNonQueryAsync(
-                    DC.Conn,
-                    DC.SqlProvider.GetSQL<M>(UiMethodEnum.CreateBatchAsync)[0],
-                    DC.DPH.GetParameters(DC.Parameters));
+                DC.Method = UiMethodEnum.CreateBatchAsync;
+                DC.SqlProvider.GetSQL();
+                return await DC.DS.ExecuteNonQueryAsync();
             });
         }
     }

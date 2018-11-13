@@ -22,10 +22,9 @@ namespace Yunyong.DataExchange.Impls
             DC.Compare = CompareEnum.None;
             DC.DPH.AddParameter(DC.DPH.CountDic(typeof(M).FullName, "*"));
             DC.DPH.SetParameter();
-            var count = await DC.DS.ExecuteScalarAsync<long>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.ExistAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.ExistAsync;
+            DC.SqlProvider.GetSQL();
+            var count = await DC.DS.ExecuteScalarAsync<long>();
             if (count > 0)
             {
                 return true;

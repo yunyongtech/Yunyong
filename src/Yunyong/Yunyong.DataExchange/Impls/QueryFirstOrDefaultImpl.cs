@@ -18,11 +18,9 @@ namespace Yunyong.DataExchange.Impls
 
         public async Task<M> QueryFirstOrDefaultAsync()
         {
-            //return await QueryFirstOrDefaultAsyncHandle<M, M>();
-            return await DC.DS.ExecuteReaderSingleRowAsync<M>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryFirstOrDefaultAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.QueryFirstOrDefaultAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderSingleRowAsync<M>();
         }
 
         public async Task<VM> QueryFirstOrDefaultAsync<VM>()
@@ -30,10 +28,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle<M, VM>();
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderSingleRowAsync<VM>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryFirstOrDefaultAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.QueryFirstOrDefaultAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderSingleRowAsync<VM>();
         }
 
         public async Task<VM> QueryFirstOrDefaultAsync<VM>(Expression<Func<M, VM>> func)
@@ -41,10 +38,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle(func);
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderSingleRowAsync<VM>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.QueryFirstOrDefaultAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.QueryFirstOrDefaultAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderSingleRowAsync<VM>();
         }
     }
 
@@ -61,10 +57,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle<M>();
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderSingleRowAsync<M>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.JoinQueryFirstOrDefaultAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.JoinQueryFirstOrDefaultAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderSingleRowAsync<M>();
         }
 
         public async Task<VM> QueryFirstOrDefaultAsync<VM>(Expression<Func<VM>> func)
@@ -72,10 +67,9 @@ namespace Yunyong.DataExchange.Impls
         {
             SelectMHandle(func);
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteReaderSingleRowAsync<VM>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<VM>(UiMethodEnum.JoinQueryFirstOrDefaultAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.JoinQueryFirstOrDefaultAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteReaderSingleRowAsync<VM>();
         }
     }
 }

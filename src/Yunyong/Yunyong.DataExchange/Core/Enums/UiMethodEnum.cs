@@ -2,6 +2,7 @@ namespace Yunyong.DataExchange.Core.Enums
 {
     internal enum UiMethodEnum
     {
+        None,
         CreateAsync,
         CreateBatchAsync,
         DeleteAsync,
@@ -16,9 +17,9 @@ namespace Yunyong.DataExchange.Core.Enums
         JoinQueryPagingListAsync,
         QueryAllAsync,
         QueryAllPagingListAsync,
-        QuerySingleValueAsync,
         ExistAsync,
         CountAsync,
+        SumAsync,
         JoinCountAsync
     }
 }

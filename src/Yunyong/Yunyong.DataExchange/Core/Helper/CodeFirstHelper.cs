@@ -4,7 +4,6 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Yunyong.DataExchange.AdoNet;
-using Yunyong.DataExchange.Cache;
 using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Extensions;
 using Yunyong.DataExchange.DBRainbow;
@@ -27,7 +26,7 @@ namespace Yunyong.DataExchange.Core.Helper
             var cmTypes = new List<NameTypeModel>();
 
             //
-            var ass = new StaticCache(DC).GetAssembly(key);
+            var ass = new XCache(DC).GetAssembly(key);
             var types = ass.GetTypes();
             foreach (var type in types)
             {
@@ -52,7 +51,8 @@ namespace Yunyong.DataExchange.Core.Helper
 
         private async Task CompareDb(IDbConnection conn, string targetDb)
         {
-            var dbs = await new DataSource().ExecuteReaderMultiRowAsync<DbModel>(conn, " show databases; ", null);
+            DC.SQL = new List<string> { " show databases; " };
+            var dbs = await new DataSource(DC).ExecuteReaderMultiRowAsync<DbModel>();
             if (dbs.Any(it => it.Database.Equals(targetDb, StringComparison.OrdinalIgnoreCase)))
             {
                 return;
@@ -61,7 +61,8 @@ namespace Yunyong.DataExchange.Core.Helper
             {
                 try
                 {
-                    var res = await new DataSource().ExecuteNonQueryAsync(conn, $" create database if not exists {targetDb} default charset utf8; ", null);
+                    DC.SQL = new List<string> { $" create database if not exists {targetDb} default charset utf8; " };
+                    var res = await new DataSource(DC).ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
@@ -71,20 +72,22 @@ namespace Yunyong.DataExchange.Core.Helper
         }
         private async Task CompareTable(IDbConnection conn)
         {
-            var key = new StaticCache(DC).GetAssemblyKey(XConfig.TablesNamespace);
+            var key = new XCache(DC).GetAssemblyKey(XConfig.TablesNamespace);
             var dtNames = new List<TableModel>();
             var tupleCs = GetTableAndTypes(key);
             var ctNames = tupleCs.Select(it=>it.Name);
             var cmTypes = tupleCs.Select(it=>it.Type);
 
             //
-            var sql = $@"
+            DC.SQL = new List<string>{
+                            $@"
                                     select table_name as TableName
                                     from information_schema.tables
                                     where table_schema='{conn.Database}'
                                             and table_type='base table';
-                                ";
-            dtNames =await new DataSource().ExecuteReaderMultiRowAsync<TableModel>(conn, sql, null);
+                                "
+            };
+            dtNames =await new DataSource(DC).ExecuteReaderMultiRowAsync<TableModel>();
 
             //
             var createList = new List<string>();

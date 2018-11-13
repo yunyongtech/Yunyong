@@ -25,10 +25,9 @@ namespace Yunyong.DataExchange.Impls
             DC.Compare = CompareEnum.None;
             DC.DPH.AddParameter(DC.DPH.CountDic(typeof(M).FullName, "*"));
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteScalarAsync<long>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<M>(UiMethodEnum.CountAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.CountAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteScalarAsync<long>();
         }
 
         public async Task<long> CountAsync<F>(Expression<Func<M, F>> func)
@@ -40,10 +39,9 @@ namespace Yunyong.DataExchange.Impls
             DC.Compare = CompareEnum.None;
             DC.DPH.AddParameter(DC.DPH.CountDic(typeof(M).FullName, key));
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteScalarAsync<long>(
-                 DC.Conn,
-                 DC.SqlProvider.GetSQL<M>(UiMethodEnum.CountAsync)[0],
-                 DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.CountAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteScalarAsync<long>();
         }
     }
 
@@ -63,10 +61,9 @@ namespace Yunyong.DataExchange.Impls
             DC.Compare = CompareEnum.None;
             DC.DPH.AddParameter(DC.DPH.CountDic(string.Empty, "*", string.Empty));
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteScalarAsync<long>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<None>(UiMethodEnum.JoinCountAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.JoinCountAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteScalarAsync<long>();
         }
 
         public async Task<long> CountAsync<F>(Expression<Func<F>> func)
@@ -77,10 +74,9 @@ namespace Yunyong.DataExchange.Impls
             DC.Compare = CompareEnum.None;
             DC.DPH.AddParameter(DC.DPH.CountDic(dic.ClassFullName, dic.ColumnOne, dic.TableAliasOne));
             DC.DPH.SetParameter();
-            return await DC.DS.ExecuteScalarAsync<long>(
-                DC.Conn,
-                DC.SqlProvider.GetSQL<None>(UiMethodEnum.JoinCountAsync)[0],
-                DC.DPH.GetParameters(DC.Parameters));
+            DC.Method = UiMethodEnum.JoinCountAsync;
+            DC.SqlProvider.GetSQL();
+            return await DC.DS.ExecuteScalarAsync<long>();
         }
     }
 }

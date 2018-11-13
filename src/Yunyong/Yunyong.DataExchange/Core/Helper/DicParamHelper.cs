@@ -218,12 +218,12 @@ namespace Yunyong.DataExchange.Core.Helper
             DC.Compare = CompareEnum.None;
             DC.Func = FuncEnum.None;
         }
-        internal DbParamInfo GetParameters(List<DicParam> dbs)
+        internal DbParamInfo GetParameters(List<DicParam> list)
         {
             var paras = new DbParamInfo();
 
             //
-            foreach (var db in dbs)
+            foreach (var db in list)
             {
                 if (DC.IsParameter(db.Action))
                 {
@@ -243,7 +243,9 @@ namespace Yunyong.DataExchange.Core.Helper
             }
 
             //
-            if (XConfig.IsDebug)
+            if (XConfig.IsDebug
+                && DC.Parameters.Count > 0
+                && list[0].ID == 1)
             {
                 lock (XDebug.Lock)
                 {
@@ -309,6 +311,20 @@ namespace Yunyong.DataExchange.Core.Helper
             dic.CsValue = value.val;
             dic.CsValueStr = value.valStr;
             dic.CsType = valType;
+
+            return dic;
+        }
+        internal DicParam DateFormatDic(string key, string alias, (object val, string valStr) value, Type valType,string format)
+        {
+            var dic = SetDicBase(DC);
+            dic.ColumnOne = key;
+            dic.TableAliasOne = alias;
+            dic.Param = key;
+            dic.ParamRaw = key;
+            dic.CsValue = value.val;
+            dic.CsValueStr = value.valStr;
+            dic.CsType = valType;
+            dic.Format = format;
 
             return dic;
         }
@@ -424,6 +440,17 @@ namespace Yunyong.DataExchange.Core.Helper
         }
 
         internal DicParam CountDic(string fullName, string key, string alias = "")
+        {
+            var dic = SetDicBase(DC);
+            dic.ClassFullName = fullName;
+            dic.TableAliasOne = alias;
+            dic.ColumnOne = key;
+            dic.Param = key;
+            dic.ParamRaw = key;
+
+            return dic;
+        }
+        internal DicParam SumDic(string fullName, string key, string alias = "")
         {
             var dic = SetDicBase(DC);
             dic.ClassFullName = fullName;
