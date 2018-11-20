@@ -56,6 +56,8 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
+
+
         private void VisitArray(JArray array)
         {
             for (int index = 0; index < array.Count; index++)
@@ -112,6 +114,13 @@ namespace Microsoft.Extensions.Configuration
 
             }
 
+            VisitJObject(obj);
+            return _data;
+        }
+
+        internal IDictionary<string, string> Parse(JsonStringConfigurationSource source)
+        {
+            var obj = JsonConvert.DeserializeObject<JObject>(source.JsonString);
             VisitJObject(obj);
             return _data;
         }
