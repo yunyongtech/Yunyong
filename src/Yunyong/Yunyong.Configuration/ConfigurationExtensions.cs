@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace Yunyong.Configuration
+namespace Microsoft.Extensions.Configuration
 {
     public static class ConfigurationExtensions
     {

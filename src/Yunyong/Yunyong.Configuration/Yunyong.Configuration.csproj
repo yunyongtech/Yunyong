@@ -6,6 +6,8 @@
     <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
     <Description>扩展配置功能</Description>
+    <RootNamespace>Microsoft.Extensions.Configuration</RootNamespace>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

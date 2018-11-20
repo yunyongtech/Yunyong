@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 
-namespace Yunyong.Configuration
+namespace Microsoft.Extensions.Configuration
 {
     public class JsonScriptConfigurationSource : IConfigurationSource
     {

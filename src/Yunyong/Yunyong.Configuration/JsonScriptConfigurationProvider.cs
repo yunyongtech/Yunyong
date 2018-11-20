@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-namespace Yunyong.Configuration
+namespace Microsoft.Extensions.Configuration
 {
     public class JsonScriptConfigurationProvider : ConfigurationProvider
     {
