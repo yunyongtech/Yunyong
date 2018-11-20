@@ -2,7 +2,7 @@
 
 namespace Microsoft.Extensions.Configuration
 {
-    public class JsonScriptConfigurationSource : IConfigurationSource
+    public class JsonDataConfigurationSource : IConfigurationSource
     {
         private readonly Dictionary<string, object> data = new Dictionary<string, object>();
 
@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Configuration
 
         public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            var provider = new JsonScriptConfigurationProvider(new Dictionary<string, object>(data));
+            var provider = new JsonDataConfigurationProvider(new Dictionary<string, object>(data));
 
             return provider;
         }

@@ -3,11 +3,11 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Extensions.Configuration
 {
-    public class JsonScriptConfigurationProvider : ConfigurationProvider
+    public class JsonDataConfigurationProvider : ConfigurationProvider
     {
         private readonly Dictionary<string, object> data;
 
-        public JsonScriptConfigurationProvider(Dictionary<string, object> data)
+        public JsonDataConfigurationProvider(Dictionary<string, object> data)
         {
             this.data = data;
         }
