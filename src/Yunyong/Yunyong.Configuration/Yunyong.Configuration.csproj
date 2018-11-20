@@ -7,7 +7,9 @@
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
     <Description>扩展配置功能</Description>
     <RootNamespace>Microsoft.Extensions.Configuration</RootNamespace>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
+    <Company>Yunyong</Company>
+    <Authors>Yunyong</Authors>
   </PropertyGroup>
 
   <ItemGroup>
