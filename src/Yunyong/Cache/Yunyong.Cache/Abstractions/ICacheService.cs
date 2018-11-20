@@ -61,7 +61,7 @@ namespace Yunyong.Cache.Abstractions
         List<T> GetByPattern<T>(string pattern);
 
         /// <summary>
-        /// Gets all.
+        ///     Gets all.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>

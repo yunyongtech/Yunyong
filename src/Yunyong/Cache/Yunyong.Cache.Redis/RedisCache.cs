@@ -38,14 +38,19 @@ namespace Yunyong.Cache.Redis
             var vals = _database.StringGet((RedisKey[]) keys);
             var result = new List<T>();
             foreach (var redisValue in vals)
+            {
                 try
                 {
-                    if (redisValue.HasValue) result.Add(JsonConvert.DeserializeObject<T>(redisValue));
+                    if (redisValue.HasValue)
+                    {
+                        result.Add(JsonConvert.DeserializeObject<T>(redisValue));
+                    }
                 }
                 catch
                 {
                     // ignored
                 }
+            }
 
             return result;
         }
@@ -65,11 +70,17 @@ namespace Yunyong.Cache.Redis
             if (slidingExpireTime.HasValue || absoluteExpireTime.HasValue)
             {
                 if (absoluteExpireTime.HasValue && absoluteExpireTime.Value != TimeSpan.Zero)
+                {
                     _database.StringSet(key, json, absoluteExpireTime);
+                }
                 else if (slidingExpireTime.HasValue && slidingExpireTime.Value != TimeSpan.Zero)
+                {
                     _database.StringSet(key, json, slidingExpireTime, When.Always, CommandFlags.FireAndForget);
+                }
                 else
+                {
                     _database.StringSet(key, JsonConvert.SerializeObject(value));
+                }
             }
             else
             {

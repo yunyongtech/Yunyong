@@ -13,6 +13,7 @@
                 {
                     value = 10;
                 }
+
                 _defaultPageSize = value;
             }
         }

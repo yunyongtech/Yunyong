@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using StackExchange.Redis;
 using Yunyong.Cache.Abstractions;
+
 //using Rainbow.Common.Enums;
 
 namespace Yunyong.Cache.Register
@@ -50,7 +51,10 @@ namespace Yunyong.Cache.Register
             TimeSpan? absoluteExpireTime = null)
         {
             var tmp = Cache.GetOrDefault<T>(key);
-            if (tmp != null) return tmp;
+            if (tmp != null)
+            {
+                return tmp;
+            }
 
             Set(key, func(), slidingExpireTime, absoluteExpireTime);
             tmp = Cache.GetOrDefault<T>(key);

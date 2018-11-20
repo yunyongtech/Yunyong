@@ -2,8 +2,7 @@
 
 namespace Yunyong.Mvc.TagHelpers
 {
-    public class RainbowTagHelper: TagHelper
+    public class RainbowTagHelper : TagHelper
     {
-        
     }
 }

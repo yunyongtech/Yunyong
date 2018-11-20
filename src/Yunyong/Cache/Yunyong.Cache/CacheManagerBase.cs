@@ -89,7 +89,9 @@ namespace Yunyong.Cache
                 .Where(c => c.CacheName == null || c.CacheName == cache.CacheName);
 
             foreach (var configurator in configurators)
+            {
                 configurator.InitAction?.Invoke(cache);
+            }
         }
 
         /// <summary>
