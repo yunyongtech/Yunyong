@@ -21,8 +21,10 @@ namespace Yunyong.Cache.Register
                 //ConnectionString = "192.168.0.20:6379"
             };
             if (!string.IsNullOrEmpty(cacheServiceConfig.Password))
+            {
                 redisCacheDatabaseProviderConfig.ConnectionString =
                     $"{redisCacheDatabaseProviderConfig.ConnectionString},password={cacheServiceConfig.Password.Trim('"')}";
+            }
 
             serviceCollection.AddSingleton(redisCacheDatabaseProviderConfig);
             //缓存过期配置

@@ -17,7 +17,10 @@ namespace Yunyong.Cache
             _configurators = new List<ICacheConfigurator>();
         }
 
-        public IReadOnlyList<ICacheConfigurator> CacheConfigurators => _configurators.ToImmutableList();
+        public IReadOnlyList<ICacheConfigurator> CacheConfigurators
+        {
+            get => _configurators.ToImmutableList();
+        }
 
         public void ConfigureAll(Action<ICache> initAction)
         {
