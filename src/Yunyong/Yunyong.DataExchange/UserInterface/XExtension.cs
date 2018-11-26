@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Yunyong.Core;
+using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
@@ -30,7 +31,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         /// <typeparam name="M">M:与DB Table 一 一对应</typeparam>
         public static Creater<M> Creater<M>(this IDbConnection conn)
-            where M:class
+            where M : class
         {
             var dc = new XContext<M>(conn);
             dc.Crud = CrudTypeEnum.Create;
@@ -61,7 +62,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         /// <typeparam name="M">M:与DB Table 一 一对应</typeparam>
         public static Selecter<M> Selecter<M>(this IDbConnection conn)
-            where M:class
+            where M : class
         {
             var dc = new XContext<M>(conn);
             dc.Crud = CrudTypeEnum.Query;
@@ -142,7 +143,7 @@ namespace Yunyong.DataExchange
         /// Creater 快速 CreateAsync 方法
         /// </summary>
         public static async Task<int> CreateAsync<M>(this IDbConnection conn, M m)
-            where M:class
+            where M : class
         {
             return await conn.Creater<M>().CreateAsync(m);
         }
@@ -151,7 +152,7 @@ namespace Yunyong.DataExchange
         /// Creater 快速 CreateBatchAsync 方法
         /// </summary>
         public static async Task<int> CreateBatchAsync<M>(this IDbConnection conn, IEnumerable<M> mList)
-            where M:class
+            where M : class
         {
             return await conn.Creater<M>().CreateBatchAsync(mList);
         }
@@ -160,25 +161,42 @@ namespace Yunyong.DataExchange
         /// Deleter 快速 DeleteAsync by pk 方法
         /// </summary>
         public static async Task<int> DeleteAsync<M>(this IDbConnection conn, object pkValue)
-            where M:class
+            where M : class
         {
             var deleter = conn.Deleter<M>();
             var option = new QuickOption().GetCondition() as IDictionary<string, object>;
             option[deleter.DC.SqlProvider.GetTablePK(typeof(M).FullName)] = pkValue;
             return await deleter.Where(option).DeleteAsync();
         }
+        /// <summary>
+        /// Deleter 快速 DeleteAsync 方法
+        /// </summary>
+        public static async Task<int> DeleteAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
+            where M : class
+        {
+            return await conn.Deleter<M>().Where(compareFunc).DeleteAsync();
+        }
 
         /// <summary>
         /// Updater 快速 UpdateAsync update fields by pk 方法
         /// </summary>
         public static async Task<int> UpdateAsync<M>(this IDbConnection conn, object pkValue, dynamic filedsObject)
-            where M:class
+            where M : class
         {
             var updater = conn.Updater<M>();
             var option = new QuickOption().GetCondition() as IDictionary<string, object>;
             option[updater.DC.SqlProvider.GetTablePK(typeof(M).FullName)] = pkValue;
             return await updater.Set(filedsObject as object).Where(option).UpdateAsync();
         }
+        /// <summary>
+        /// Updater 快速 UpdateAsync update fields 方法
+        /// </summary>
+        public static async Task<int> UpdateAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, dynamic filedsObject)
+            where M : class
+        {
+            return await conn.Updater<M>().Set(filedsObject as object).Where(compareFunc).UpdateAsync();
+        }
+
 
         /// <summary>
         /// Selecter 快速 FirstOrDefaultAsync by pk 方法
@@ -197,7 +215,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<VM> GetAsync<M, VM>(this IDbConnection conn, object pkValue)
             where M : class
-            where VM:class
+            where VM : class
         {
             var selecter = conn.Selecter<M>();
             var option = new QuickOption().GetCondition() as IDictionary<string, object>;
@@ -210,7 +228,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<VM> GetAsync<M, VM>(this IDbConnection conn, object pkValue, Expression<Func<M, VM>> columnMapFunc)
             where M : class
-            where VM:class
+            where VM : class
         {
             var selecter = conn.Selecter<M>();
             var option = new QuickOption().GetCondition() as IDictionary<string, object>;
@@ -231,7 +249,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<VM> FirstOrDefaultAsync<M, VM>(this IDbConnection conn, QueryOption option)
             where M : class
-            where VM:class
+            where VM : class
         {
             return await conn.Selecter<M>().Where(option).FirstOrDefaultAsync<VM>();
         }
@@ -240,7 +258,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<VM> FirstOrDefaultAsync<M, VM>(this IDbConnection conn, QueryOption option, Expression<Func<M, VM>> columnMapFunc)
             where M : class
-            where VM:class
+            where VM : class
         {
             return await conn.Selecter<M>().Where(option).FirstOrDefaultAsync<VM>(columnMapFunc);
         }
@@ -285,7 +303,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<List<VM>> ListAsync<M, VM>(this IDbConnection conn, QueryOption option)
             where M : class
-            where VM:class
+            where VM : class
         {
             return await conn.Selecter<M>().Where(option).ListAsync<VM>();
         }
@@ -294,7 +312,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<List<VM>> ListAsync<M, VM>(this IDbConnection conn, QueryOption option, Expression<Func<M, VM>> columnMapFunc)
             where M : class
-            where VM:class
+            where VM : class
         {
             return await conn.Selecter<M>().Where(option).ListAsync<VM>(columnMapFunc);
         }
@@ -339,7 +357,7 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<PagingList<VM>> PagingListAsync<M, VM>(this IDbConnection conn, PagingQueryOption option)
             where M : class
-            where VM:class
+            where VM : class
         {
             return await conn.Selecter<M>().Where(option).PagingListAsync<VM>(option);
         }
@@ -348,16 +366,42 @@ namespace Yunyong.DataExchange
         /// </summary>
         public static async Task<PagingList<VM>> PagingListAsync<M, VM>(this IDbConnection conn, PagingQueryOption option, Expression<Func<M, VM>> columnMapFunc)
             where M : class
-            where VM:class
+            where VM : class
         {
             return await conn.Selecter<M>().Where(option).PagingListAsync<VM>(option, columnMapFunc);
+        }
+
+        /// <summary>
+        /// Selecter 快速 AllAsync 方法
+        /// </summary>
+        public static async Task<List<M>> AllAsync<M>(this IDbConnection conn)
+            where M : class
+        {
+            return await conn.Selecter<M>().AllAsync();
+        }
+        /// <summary>
+        /// Selecter 快速 AllAsync 方法
+        /// </summary>
+        public static async Task<List<VM>> AllAsync<M, VM>(this IDbConnection conn)
+            where M : class
+            where VM : class
+        {
+            return await conn.Selecter<M>().AllAsync<VM>();
+        }
+        /// <summary>
+        /// Selecter 快速 AllAsync 方法
+        /// </summary>
+        public static async Task<List<T>> AllAsync<M, T>(this IDbConnection conn, Expression<Func<M, T>> propertyFunc)
+            where M : class
+        {
+            return await conn.Selecter<M>().AllAsync(propertyFunc);
         }
 
         /// <summary>
         /// Selecter 快速 ExistAsync 方法
         /// </summary>
         public static async Task<bool> ExistAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
-            where M:class
+            where M : class
         {
             return await conn.Selecter<M>().Where(compareFunc).ExistAsync();
         }
@@ -365,12 +409,12 @@ namespace Yunyong.DataExchange
         /// <summary>
         /// Selecter 快速 CountAsync 方法
         /// </summary>
-        public static async Task<int> CountAsync<M>(this IDbConnection conn,Expression<Func<M,bool>> compareFunc)
-            where M:class
+        public static async Task<int> CountAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
+            where M : class
         {
             return await conn.Selecter<M>().Where(compareFunc).CountAsync();
         }
-        
+
         /******************************************************************************************************************************/
 
         /// <summary>
@@ -385,7 +429,10 @@ namespace Yunyong.DataExchange
 
         public static IDbConnection OpenDB(this IDbConnection conn)
         {
-            conn.Open();
+            if (conn.State == ConnectionState.Closed)
+            {
+                new DataSource().OpenAsync(conn).GetAwaiter().GetResult();
+            }
             return conn;
         }
         /// <summary>
