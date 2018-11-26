@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Yunyong.Core;
 
 namespace Yunyong.EventBus
 {
@@ -8,7 +9,7 @@ namespace Yunyong.EventBus
         protected EventResponse(Guid requestId, bool isSuccess = true, string resultDesc = "")
         {
             RequestId = requestId;
-            Id = Guid.NewGuid();
+            Id = GuidUtil.NewSequentialId();
             IsSuccess = isSuccess;
             ResultDesc = resultDesc;
         }
