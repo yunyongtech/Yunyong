@@ -14,9 +14,8 @@ namespace Yunyong.DataExchange
         /**************************************************************************************************************/
 
         /// <summary>
-        /// 过滤条件起点
+        /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        /// <param name="func">格式: it => it.Id == m.Id </param>
         public static WhereD<M> Where<M>(this Deleter<M> deleter, Expression<Func<M, bool>> compareFunc)
             where M : class
         {
@@ -26,7 +25,7 @@ namespace Yunyong.DataExchange
         }
 
         /// <summary>
-        /// 过滤条件起点 -- 设置多个条件
+        /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public static WhereD<M> Where<M>(this Deleter<M> deleter, object mWhere)
             where M:class
@@ -39,9 +38,8 @@ namespace Yunyong.DataExchange
         /**************************************************************************************************************/
 
         /// <summary>
-        /// 过滤条件起点
+        /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        /// <param name="func">格式: it => it.AgentId == id2</param>
         public static WhereU<M> Where<M>(this SetU<M> set, Expression<Func<M, bool>> compareFunc)
             where M : class
         {
@@ -51,7 +49,7 @@ namespace Yunyong.DataExchange
         }
 
         /// <summary>
-        /// 过滤条件起点 -- 设置多个条件
+        /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public static WhereU<M> Where<M>(this SetU<M> set, object mWhere)
             where M:class
@@ -64,9 +62,8 @@ namespace Yunyong.DataExchange
         /**************************************************************************************************************/
 
         /// <summary>
-        /// 过滤条件起点
+        /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        /// <param name="func">格式: it => it.CreatedOn >= WhereTest.CreatedOn</param>
         public static WhereQ<M> Where<M>(this Selecter<M> selecter, Expression<Func<M, bool>> compareFunc)
             where M : class
         {
@@ -76,7 +73,7 @@ namespace Yunyong.DataExchange
         }
 
         /// <summary>
-        /// 过滤条件起点 -- 设置多个条件
+        /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public static WhereQ<M> Where<M>(this Selecter<M> selecter, object mWhere)
             where M : class
@@ -88,6 +85,9 @@ namespace Yunyong.DataExchange
 
         /**************************************************************************************************************/
 
+        /// <summary>
+        /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
+        /// </summary>
         public static WhereX Where(this OnX on, Expression<Func<bool>> compareFunc)
         {
             on.DC.Action = ActionEnum.Where;

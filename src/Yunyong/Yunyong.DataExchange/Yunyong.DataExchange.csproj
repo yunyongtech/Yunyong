@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.1.43</Version>
+    <Version>1.1.44</Version>
     <Authors>Meng.NET</Authors>
     <Company>yunyong_tech</Company>
     <Product>MyDAL</Product>
@@ -17,6 +17,10 @@
        -- https://www.cnblogs.com/Meng-NET/p/8963476.html</PackageReleaseNotes>
     <ApplicationIcon>Others\favicon.ico</ApplicationIcon>
     <Win32Resource />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>bin\Debug\Yunyong.DataExchange.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />

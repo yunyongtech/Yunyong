@@ -71,6 +71,8 @@ namespace Yunyong.DataExchange.Core.Bases
         internal FuncEnum Func { get; set; } = FuncEnum.None;
         internal UiMethodEnum Method { get; set; } = UiMethodEnum.None;
 
+        internal SetEnum Set { get; set; } = SetEnum.AllowedNull;
+
         /************************************************************************************************************************/
 
         internal bool NeedSetSingle { get; set; } = true;
@@ -108,17 +110,6 @@ namespace Yunyong.DataExchange.Core.Bases
             {
                 case ActionEnum.Insert:
                 case ActionEnum.Update:
-                case ActionEnum.Where:
-                case ActionEnum.And:
-                case ActionEnum.Or:
-                    return true;
-            }
-            return false;
-        }
-        internal bool IsFilterCondition(ActionEnum action)
-        {
-            switch (action)
-            {
                 case ActionEnum.Where:
                 case ActionEnum.And:
                 case ActionEnum.Or:

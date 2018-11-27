@@ -12,11 +12,11 @@ using Yunyong.DataExchange.Core.Extensions;
 
 namespace Yunyong.DataExchange.DataRainbow.MySQL
 {
-    internal class MySqlProvider
-        : XSQL, ISqlProvider
+    internal sealed class MySqlProvider
+        : SqlContext, ISqlProvider
     {
         private Context DC { get; set; }
-        private StringBuilder X { get; set; }
+        private StringBuilder X { get; set; } = new StringBuilder();
 
         private MySqlProvider() { }
         internal MySqlProvider(Context dc)
@@ -27,41 +27,48 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
 
         /****************************************************************************************************************/
 
-        private string OrderByHandle1()
+        private void OrderByHandle1(StringBuilder sb)
         {
-            var list = new List<string>();
-            var orders = DC.Parameters.Where(it => it.Action == ActionEnum.OrderBy);
+            var orders = DC.Parameters.Where(it => IsOrderByParam(it)).ToList();
+            var i = 0;
             foreach (var o in orders)
             {
+                i++;
                 if (o.Func == FuncEnum.None
                     || o.Func == FuncEnum.Column)
                 {
                     if (DC.Crud == CrudTypeEnum.Join)
                     {
-                        list.Add($" {o.TableAliasOne}.`{o.ColumnOne}` {Option(o.Option)} ");
+                        sb.Append(o.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(o.ColumnOne); Backquote(sb); Spacing(sb); sb.Append(Option(o.Option));
                     }
                     else
                     {
-                        list.Add($" `{o.ColumnOne}` {Option(o.Option)} ");
+                        Backquote(sb); sb.Append(o.ColumnOne); Backquote(sb); Spacing(sb); sb.Append(Option(o.Option));
                     }
                 }
                 else if (o.Func == FuncEnum.CharLength)
                 {
                     if (DC.Crud == CrudTypeEnum.Join)
                     {
-                        list.Add($" {Function(o.Func)}({o.TableAliasOne}.`{o.ColumnOne}`) {Option(o.Option)} ");
+                        sb.Append(Function(o.Func));
+                        LeftBracket(sb); sb.Append(o.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(o.ColumnOne); Backquote(sb); RightBracket(sb); Spacing(sb); sb.Append(Option(o.Option));
                     }
                     else
                     {
-                        list.Add($" {Function(o.Func)}(`{o.ColumnOne}`) {Option(o.Option)} ");
+                        sb.Append(Function(o.Func)); LeftBracket(sb); Backquote(sb); sb.Append(o.ColumnOne); Backquote(sb); RightBracket(sb); Spacing(sb); sb.Append(Option(o.Option));
                     }
                 }
+                else
+                {
+                    throw new Exception($"{XConfig.EC._013} -- [[{o.Action}-{o.Option}-{o.Func}]] 不能解析!!!");
+                }
+                if (i != orders.Count) { Comma(sb); }
             }
-            return string.Join(",", list);
         }
-
-        /****************************************************************************************************************/
-
+        private string InStrHandle(List<DicParam> dbs)
+        {
+            return $" {string.Join(",", dbs.Select(it => $" @{it.Param} "))} ";
+        }
         private void ConcatWithComma(StringBuilder sb, IEnumerable<string> ss, Action<StringBuilder> preSymbol, Action<StringBuilder> afterSymbol)
         {
             var n = ss.Count();
@@ -79,7 +86,7 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
         private string LikeStrHandle(DicParam dic)
         {
             var name = dic.Param;
-            var value = dic.ParamInfo.Value.ToString(); // dic.CsValue;
+            var value = dic.ParamInfo.Value.ToString();
             if (!value.Contains("%")
                 && !value.Contains("_"))
             {
@@ -99,304 +106,180 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
 
             throw new Exception(value);
         }
-        private string CharLengthProcess(DicParam db, bool isMulti)
-        {
-            if (isMulti)
-            {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    return $" {Function(db.Func)}({db.TableAliasOne}.`{db.ColumnOne}`){Compare(db.Compare)}@{db.Param} ";
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    return $" {Function(db.Func)}(`{db.ColumnOne}`){Compare(db.Compare)}@{db.Param} ";
-                }
-            }
-            else
-            {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    return $" {Action(db.Action)} {Function(db.Func)}({db.TableAliasOne}.`{db.ColumnOne}`){Compare(db.Compare)}@{db.Param} ";
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    return $" {Action(db.Action)} {Function(db.Func)}(`{db.ColumnOne}`){Compare(db.Compare)}@{db.Param} ";
-                }
-            }
-            throw new Exception("CharLengthProcess 未能处理!!!");
-        }
-        private void DateFormatProcess(DicParam db, bool isMulti, StringBuilder sb)
+
+        /****************************************************************************************************************/
+
+        private void CharLengthProcess(DicParam db, StringBuilder sb)
         {
             Spacing(sb);
-            if (isMulti)
+            if (db.Crud == CrudTypeEnum.Join)
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(Function(db.Func));
-                    LeftBracket(sb);
-                    sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Comma(sb); SingleQuote(sb); sb.Append(db.Format); SingleQuote(sb);
-                    RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    sb.Append(Function(db.Func));
-                    LeftBracket(sb);
-                    Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Comma(sb); SingleQuote(sb); sb.Append(db.Format); SingleQuote(sb);
-                    RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
+                sb.Append(Function(db.Func));
+                LeftBracket(sb); sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
+                sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
             }
-            else
+            else if (DC.IsSingleTableOption())
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb);
-                    sb.Append(Function(db.Func));
-                    LeftBracket(sb);
-                    sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Comma(sb); SingleQuote(sb); sb.Append(db.Format); SingleQuote(sb);
-                    RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb);
-                    sb.Append(Function(db.Func));
-                    LeftBracket(sb);
-                    Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Comma(sb); SingleQuote(sb); sb.Append(db.Format); SingleQuote(sb);
-                    RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
+                sb.Append(Function(db.Func));
+                LeftBracket(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
+                sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
             }
         }
-        private void TrimProcess(DicParam db, bool isMulti, StringBuilder sb)
+        private void DateFormatProcess(DicParam db, StringBuilder sb)
         {
             Spacing(sb);
-            if (isMulti)
+            if (db.Crud == CrudTypeEnum.Join)
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    sb.Append(Function(db.Func)); LeftBracket(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
+                sb.Append(Function(db.Func)); LeftBracket(sb);
+                sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Comma(sb); SingleQuote(sb); sb.Append(db.Format); SingleQuote(sb);
+                RightBracket(sb); sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
             }
-            else
+            else if (DC.IsSingleTableOption())
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb);
-                    sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb);
-                    sb.Append(Function(db.Func)); LeftBracket(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
-                    sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
-                }
+                sb.Append(Function(db.Func)); LeftBracket(sb);
+                Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Comma(sb); SingleQuote(sb); sb.Append(db.Format); SingleQuote(sb);
+                RightBracket(sb); sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
             }
         }
-        private void InProcess(DicParam db, bool isMulti, StringBuilder sb)
+        private void TrimProcess(DicParam db, StringBuilder sb)
         {
             Spacing(sb);
-            if (isMulti)
+            if (db.Crud == CrudTypeEnum.Join)
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb);
-                    sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(InStrHandle(db.InItems)); RightBracket(sb);
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb);
-                    sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(InStrHandle(db.InItems)); RightBracket(sb);
-                }
+                sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
+                sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
             }
-            else
+            else if (DC.IsSingleTableOption())
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb); sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb);
-                    sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(InStrHandle(db.InItems)); RightBracket(sb);
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb);
-                    sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(InStrHandle(db.InItems)); RightBracket(sb);
-                }
+                sb.Append(Function(db.Func)); LeftBracket(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); RightBracket(sb);
+                sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
+            }
+        }
+        private void InProcess(DicParam db, StringBuilder sb)
+        {
+            Spacing(sb);
+            if (db.Crud == CrudTypeEnum.Join)
+            {
+                sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb);
+                sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(InStrHandle(db.InItems)); RightBracket(sb);
+            }
+            else if (DC.IsSingleTableOption())
+            {
+                Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb);
+                sb.Append(Function(db.Func)); LeftBracket(sb); sb.Append(InStrHandle(db.InItems)); RightBracket(sb);
             }
         }
 
         /****************************************************************************************************************/
 
-        private string CompareProcess(DicParam db, bool isMulti)
+        private void CompareProcess(DicParam db, StringBuilder sb)
         {
-            if (isMulti)
+            Spacing(sb);
+            if (db.Crud == CrudTypeEnum.Join)
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    return $" {db.TableAliasOne}.`{db.ColumnOne}`{Compare(db.Compare)}@{db.Param} ";
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    return $" `{db.ColumnOne}`{Compare(db.Compare)}@{db.Param} ";
-                }
+                sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
             }
-            else
+            else if (DC.IsSingleTableOption())
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    return $" {Action(db.Action)} {db.TableAliasOne}.`{db.ColumnOne}`{Compare(db.Compare)}@{db.Param} ";
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    return $" {Action(db.Action)} `{db.ColumnOne}`{Compare(db.Compare)}@{db.Param} ";
-                }
+                Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); sb.Append(Compare(db.Compare)); AT(sb); sb.Append(db.Param);
             }
-            throw new Exception("CompareProcess 未能处理!!!");
         }
-        private string FunctionProcess(DicParam db, bool isMulti)
+        private void FunctionProcess(DicParam db, StringBuilder sb)
         {
             if (db.Func == FuncEnum.CharLength)
             {
-                return CharLengthProcess(db, isMulti);
+                CharLengthProcess(db, sb);
             }
             else if (db.Func == FuncEnum.DateFormat)
             {
-                var sb3 = new StringBuilder();
-                DateFormatProcess(db, isMulti, sb3);
-                return sb3.ToString();
+                DateFormatProcess(db, sb);
             }
             else if (db.Func == FuncEnum.Trim || db.Func == FuncEnum.LTrim || db.Func == FuncEnum.RTrim)
             {
-                var sb2 = new StringBuilder();
-                TrimProcess(db, isMulti, sb2);
-                return sb2.ToString();
+                TrimProcess(db, sb);
             }
             else if (db.Func == FuncEnum.In || db.Func == FuncEnum.NotIn)
             {
-                var sb1 = new StringBuilder();
-                InProcess(db, isMulti, sb1);
-                return sb1.ToString();
+                InProcess(db, sb);
             }
             else
             {
                 throw new Exception($"{XConfig.EC._006} -- [[{db.Func}]] 不能处理!!!");
             }
         }
-        private void LikeProcess(DicParam db, bool isMulti, StringBuilder sb)
+        private void LikeProcess(DicParam db, StringBuilder sb)
         {
             Spacing(sb);
-            if (isMulti)
+            if (db.Crud == CrudTypeEnum.Join)
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); sb.Append(Option(db.Option)); sb.Append(LikeStrHandle(db));
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); sb.Append(Option(db.Option)); sb.Append(LikeStrHandle(db));
-                }
+                sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); sb.Append(Option(db.Option)); sb.Append(LikeStrHandle(db));
             }
-            else
+            else if (DC.IsSingleTableOption())
             {
-                if (db.Crud == CrudTypeEnum.Join)
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb); sb.Append(db.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb);
-                    sb.Append(Option(db.Option));
-                    sb.Append(LikeStrHandle(db));
-                }
-                else if (DC.IsSingleTableOption())
-                {
-                    sb.Append(Action(db.Action)); Spacing(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); sb.Append(Option(db.Option)); sb.Append(LikeStrHandle(db));
-                }
+                Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); sb.Append(Option(db.Option)); sb.Append(LikeStrHandle(db));
             }
         }
-        private void OneEqualOneProcess(DicParam db, bool isMulti, StringBuilder sb)
+        private void OneEqualOneProcess(DicParam db, StringBuilder sb)
         {
             Spacing(sb);
-            if (isMulti)
-            {
-                AT(sb); sb.Append(db.Param);
-            }
-            else
-            {
-                sb.Append(Action(db.Action)); Spacing(sb); AT(sb); sb.Append(db.Param);
-            }
+            AT(sb); sb.Append(db.Param);
         }
-        private string InStrHandle(List<DicParam> dbs)
-        {
-            return $" {string.Join(",", dbs.Select(it => $" @{it.Param} "))} ";
-        }
-        private void IsNullProcess(DicParam db, bool isMulti, StringBuilder sb)
+        private void IsNullProcess(DicParam db, StringBuilder sb)
         {
             Spacing(sb);
-            if (isMulti)
-            {
-                Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb); sb.Append(Option(db.Option));
-            }
-            else
-            {
-                sb.Append(Action(db.Action)); Spacing(sb); Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb); sb.Append(Option(db.Option));
-            }
+            Backquote(sb); sb.Append(db.ColumnOne); Backquote(sb); Spacing(sb); sb.Append(Option(db.Option));
         }
 
         /****************************************************************************************************************/
 
-        private string MultiCondition(DicParam db, bool isMulti)
+        private void MultiCondition(DicParam db, StringBuilder sb)
         {
             if (db.Group != null)
             {
-                var list = new List<string>();
+                var i = 0;
                 foreach (var item in db.Group)
                 {
+                    i++;
                     if (item.Group != null)
                     {
-                        list.Add($"({MultiCondition(item, true)})");
+                        LeftBracket(sb); MultiCondition(item, sb); RightBracket(sb);
                     }
                     else
                     {
-                        list.Add(MultiCondition(item, isMulti));
+                        MultiCondition(item, sb);
+                    }
+                    if (i != db.Group.Count)
+                    {
+                        MultiAction(db.GroupAction, sb);
                     }
                 }
-                var sb1 = new StringBuilder();
-                MultiAction(db.GroupAction, sb1);
-                return string.Join(sb1.ToString(), list);
             }
             else
             {
                 if (db.Option == OptionEnum.Compare)
                 {
-                    return CompareProcess(db, isMulti);
+                    CompareProcess(db, sb);
                 }
                 else if (db.Option == OptionEnum.Function)
                 {
-                    return FunctionProcess(db, isMulti);
+                    FunctionProcess(db, sb);
                 }
                 else if (db.Option == OptionEnum.Like)
                 {
-                    var sb4 = new StringBuilder();
-                    LikeProcess(db, isMulti, sb4);
-                    return sb4.ToString();
+                    LikeProcess(db, sb);
                 }
                 else if (db.Option == OptionEnum.OneEqualOne)
                 {
-                    var sb3 = new StringBuilder();
-                    OneEqualOneProcess(db, isMulti, sb3);
-                    return sb3.ToString();
+                    OneEqualOneProcess(db, sb);
                 }
                 else if (db.Option == OptionEnum.IsNull || db.Option == OptionEnum.IsNotNull)
                 {
-                    var sb2 = new StringBuilder();
-                    IsNullProcess(db, isMulti, sb2);
-                    return sb2.ToString();
+                    IsNullProcess(db, sb);
                 }
-                return string.Empty;
+                else
+                {
+                    throw new Exception($"{XConfig.EC._011} -- [[{db.Action}-{db.Option}]] -- 不能解析!!!");
+                }
             }
         }
 
@@ -414,8 +297,32 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
         }
         private void UpdateColumn()
         {
+            //
             var list = DC.Parameters.Where(it => it.Action == ActionEnum.Update)?.ToList();
             if (list == null || list.Count == 0) { throw new Exception("没有设置任何要更新的字段!"); }
+
+            //
+            if (DC.Set == SetEnum.AllowedNull)
+            { }
+            else if (DC.Set == SetEnum.NotAllowedNull)
+            {
+                if (list.Any(it => it.ParamInfo.Value == DBNull.Value))
+                {
+                    throw new Exception($"{DC.Set} -- 字段:[[{string.Join(",", list.Where(it => it.ParamInfo.Value == DBNull.Value).Select(it => it.ColumnOne))}]]的值不能设为 Null !!!");
+                }
+            }
+            else if (DC.Set == SetEnum.IgnoreNull)
+            {
+                list = list.Where(it => it.ParamInfo.Value != DBNull.Value)?.ToList();
+                if (list == null || list.Count == 0) { throw new Exception("没有设置任何要更新的字段!"); }
+            }
+            else
+            {
+                throw new Exception($"{XConfig.EC._012} -- [[{DC.Set}]] 不能解析!!!");
+            }
+
+            //
+            Spacing(X);
             var i = 0;
             foreach (var item in list)
             {
@@ -449,18 +356,17 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
             foreach (var dic in items)
             {
                 i++;
+                if (i != 1) { CRLF(X); Tab(X); }
                 if (dic.Func == FuncEnum.None)
                 {
                     if (dic.Crud == CrudTypeEnum.Join)
                     {
                         if (dic.Option == OptionEnum.Column)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             X.Append(dic.TableAliasOne); Dot(X); Backquote(X); X.Append(dic.ColumnOne); Backquote(X);
                         }
                         else if (dic.Option == OptionEnum.ColumnAs)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             X.Append(dic.TableAliasOne); Dot(X); Backquote(X); X.Append(dic.ColumnOne); Backquote(X); As(X); X.Append(dic.ColumnOneAlias);
                         }
                     }
@@ -468,12 +374,10 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
                     {
                         if (dic.Option == OptionEnum.Column)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             Backquote(X); X.Append(dic.ColumnOne); Backquote(X);
                         }
                         else if (dic.Option == OptionEnum.ColumnAs)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             Backquote(X); X.Append(dic.ColumnOne); Backquote(X); As(X); X.Append(dic.ColumnOneAlias);
                         }
                     }
@@ -484,14 +388,12 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
                     {
                         if (dic.Option == OptionEnum.Column)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             X.Append(Function(dic.Func)); LeftBracket(X);
                             X.Append(dic.TableAliasOne); Dot(X); Backquote(X); X.Append(dic.ColumnOne); Backquote(X); Comma(X);
                             SingleQuote(X); X.Append(dic.Format); SingleQuote(X); RightBracket(X);
                         }
                         else if (dic.Option == OptionEnum.ColumnAs)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             X.Append(Function(dic.Func)); LeftBracket(X);
                             X.Append(dic.TableAliasOne); Dot(X); Backquote(X); X.Append(dic.ColumnOne); Backquote(X); Comma(X);
                             SingleQuote(X); X.Append(dic.Format); SingleQuote(X); RightBracket(X); As(X); X.Append(dic.ColumnOneAlias);
@@ -501,14 +403,12 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
                     {
                         if (dic.Option == OptionEnum.Column)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             X.Append(Function(dic.Func)); LeftBracket(X);
                             Backquote(X); X.Append(dic.ColumnOne); Backquote(X); Comma(X);
                             SingleQuote(X); X.Append(dic.Format); SingleQuote(X); RightBracket(X);
                         }
                         else if (dic.Option == OptionEnum.ColumnAs)
                         {
-                            if (i != 1) { CRLF(X); Tab(X); }
                             X.Append(Function(dic.Func)); LeftBracket(X);
                             Backquote(X); X.Append(dic.ColumnOne); Backquote(X); Comma(X);
                             SingleQuote(X); X.Append(dic.Format); SingleQuote(X); RightBracket(X); As(X); X.Append(dic.ColumnOneAlias);
@@ -574,44 +474,48 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
                 }
             }
         }
-        private void Where(StringBuilder sb)
+        private void Where()
         {
-            Spacing(sb);
-            var str = string.Empty;
-
-            //
-            foreach (var db in DC.Parameters)
+            var cons = DC.Parameters.Where(it => it.Action == ActionEnum.Where || it.Action == ActionEnum.And || it.Action == ActionEnum.Or)?.ToList();
+            if (cons == null)
             {
-                if (DC.IsFilterCondition(db.Action))
-                {
-                    str += db.Group == null ? MultiCondition(db, false) : $" {Action(db.Action)} ({MultiCondition(db, true)}) ";
-                }
+                return;
             }
-
-            //
-            if (!str.IsNullStr()
-                && DC.Parameters.All(it => it.Action != ActionEnum.Where))
+            var where = cons.FirstOrDefault(it => it.Action == ActionEnum.Where);
+            var and = cons.FirstOrDefault(it => it.Action == ActionEnum.And);
+            var or = cons.FirstOrDefault(it => it.Action == ActionEnum.Or);
+            if (where == null
+                && (and != null || or != null))
             {
-                var aIdx = str.IndexOf(" and ", StringComparison.OrdinalIgnoreCase);
-                var oIdx = str.IndexOf(" or ", StringComparison.OrdinalIgnoreCase);
-                if (aIdx < oIdx
-                    || oIdx == -1)
+                var aId = and == null ? -1 : and.ID;
+                var oId = or == null ? -1 : or.ID;
+                if (aId < oId
+                    || oId == -1)
                 {
-                    str = $" {Action(ActionEnum.Where)} true {str} ";
+                    X.Append(Action(ActionEnum.Where)); Spacing(X); X.Append("true"); Spacing(X);
                 }
                 else
                 {
-                    str = $" {Action(ActionEnum.Where)} false {str} ";
+                    X.Append(Action(ActionEnum.Where)); Spacing(X); X.Append("false"); Spacing(X);
                 }
             }
-
-            //
-            sb.Append(str);
+            foreach (var db in cons)
+            {
+                CRLF(X); X.Append(Action(db.Action)); Spacing(X);
+                if (db.Group == null)
+                {
+                    MultiCondition(db, X);
+                }
+                else
+                {
+                    LeftBracket(X); MultiCondition(db, X); RightBracket(X);
+                }
+            }
         }
         private void OrderBy(StringBuilder sb)
         {
             CRLF(sb);
-            sb.Append("order by");
+            sb.Append("order by"); Spacing(sb);
             var str = string.Empty;
             var dic = DC.Parameters.FirstOrDefault(it => it.Action == ActionEnum.From);
             var key = dic != null ? dic.Key : DC.SC.GetModelKey(DC.SingleOpName);
@@ -620,7 +524,9 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
 
             if (DC.Parameters.Any(it => it.Action == ActionEnum.OrderBy))
             {
-                str = OrderByHandle1();
+                var sb1 = new StringBuilder();
+                OrderByHandle1(sb1);
+                str = sb1.ToString();
             }
             else if (props.Any(it => "CreatedOn".Equals(it.Name, StringComparison.OrdinalIgnoreCase)))
             {
@@ -658,7 +564,7 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
 
             sb.Append(str);
         }
-        private void Limit(StringBuilder sb)
+        private void Limit()
         {
             if (DC.PageIndex.HasValue
                 && DC.PageSize.HasValue)
@@ -668,43 +574,25 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
                 {
                     start = ((DC.PageIndex - 1) * DC.PageSize).ToInt();
                 }
-                CRLF(sb);
-                sb.Append("limit");
-                Spacing(sb);
-                sb.Append(start);
-                Comma(sb);
-                sb.Append(DC.PageSize);
+                CRLF(X); X.Append("limit"); Spacing(X); X.Append(start); Comma(X); X.Append(DC.PageSize);
             }
         }
 
-        private void Set(StringBuilder sb)
-        {
-            CRLF(sb);
-            sb.Append("set");
-        }
-        private void Distinct(StringBuilder sb)
+        private void Distinct()
         {
             if (DC.Parameters.Any(it => it.Option == OptionEnum.Distinct))
             {
-                Spacing(sb);
-                sb.Append("distinct");
-                Spacing(sb);
+                Spacing(X); X.Append("distinct"); Spacing(X);
             }
         }
-        private void As(StringBuilder sb)
-        {
-            Spacing(sb);
-            sb.Append("as");
-            Spacing(sb);
-        }
-        private void CountCD(StringBuilder sb)
+        private void CountCD()
         {
             /* 
              * count(*)
              * count(col)
              * count(distinct col)
              */
-            Spacing(sb);
+            Spacing(X);
             var item = DC.Parameters.FirstOrDefault(it => it.Option == OptionEnum.Count);
             if (item != null)
             {
@@ -712,67 +600,42 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
                 {
                     if ("*".Equals(item.ColumnOne, StringComparison.OrdinalIgnoreCase))
                     {
-                        sb.Append(Option(item.Option));
-                        LeftBracket(sb);
-                        sb.Append(item.ColumnOne);
-                        RightBracket(sb);
+                        X.Append(Option(item.Option)); LeftBracket(X); X.Append(item.ColumnOne); RightBracket(X);
                     }
                     else
                     {
-                        sb.Append(Option(item.Option));
-                        LeftBracket(sb);
-                        Distinct(sb);
-                        Backquote(sb);
-                        sb.Append(item.ColumnOne);
-                        Backquote(sb);
-                        RightBracket(sb);
+                        X.Append(Option(item.Option)); LeftBracket(X); Distinct(); Backquote(X); X.Append(item.ColumnOne); Backquote(X); RightBracket(X);
                     }
                 }
                 else if (item.Crud == CrudTypeEnum.Join)
                 {
                     if ("*".Equals(item.ColumnOne, StringComparison.OrdinalIgnoreCase))
                     {
-                        sb.Append(Option(item.Option));
-                        LeftBracket(sb);
-                        sb.Append(item.ColumnOne);
-                        RightBracket(sb);
+                        X.Append(Option(item.Option)); LeftBracket(X); X.Append(item.ColumnOne); RightBracket(X);
                     }
                     else
                     {
-                        sb.Append(Option(item.Option));
-                        LeftBracket(sb);
-                        Distinct(sb);
-                        sb.Append(item.TableAliasOne);
-                        Dot(sb);
-                        Backquote(sb);
-                        sb.Append(item.ColumnOne);
-                        Backquote(sb);
-                        RightBracket(sb);
+                        X.Append(Option(item.Option)); LeftBracket(X); Distinct(); X.Append(item.TableAliasOne); Dot(X); Backquote(X); X.Append(item.ColumnOne); Backquote(X); RightBracket(X);
                     }
                 }
             }
             else
             {
-                sb.Append("count(*)");
+                X.Append("count(*)");
             }
         }
-        private void Sum(StringBuilder sb)
+        private void Sum()
         {
-            Spacing(sb);
+            Spacing(X);
             var item = DC.Parameters.FirstOrDefault(it => it.Option == OptionEnum.Sum);
             if (item.Crud == CrudTypeEnum.Query)
             {
-                sb.Append(Option(item.Option)); LeftBracket(sb); Backquote(sb); sb.Append(item.ColumnOne); Backquote(sb); RightBracket(sb);
+                X.Append(Option(item.Option)); LeftBracket(X); Backquote(X); X.Append(item.ColumnOne); Backquote(X); RightBracket(X);
             }
             else if (item.Crud == CrudTypeEnum.Join)
             {
-                sb.Append(Option(item.Option)); LeftBracket(sb); sb.Append(item.TableAliasOne); Dot(sb); Backquote(sb); sb.Append(item.ColumnOne); Backquote(sb); RightBracket(sb);
+                X.Append(Option(item.Option)); LeftBracket(X); X.Append(item.TableAliasOne); Dot(X); Backquote(X); X.Append(item.ColumnOne); Backquote(X); RightBracket(X);
             }
-        }
-
-        private void End(StringBuilder sb)
-        {
-            sb.Append(";");
         }
 
         /****************************************************************************************************************/
@@ -822,76 +685,48 @@ namespace Yunyong.DataExchange.DataRainbow.MySQL
             };
             return await DC.DS.ExecuteReaderMultiRowAsync<ColumnInfo>();
         }
-        string ISqlProvider.GetTablePK(string fullName)
-        {
-            var key = DC.SC.GetModelKey(fullName);
-            var col = DC.SC.GetColumnInfos(key).FirstOrDefault(it => "PRI".Equals(it.KeyType, StringComparison.OrdinalIgnoreCase));
-            if (col == null)
-            {
-                throw new Exception($"类 [[{fullName}]] 对应的表 [[{col.TableName}]] 没有主键!");
-            }
-            return col.ColumnName;
-        }
         void ISqlProvider.GetSQL()
         {
             var list = new List<string>();
-            X = new StringBuilder();
 
             //
             switch (DC.Method)
             {
                 case UiMethodEnum.CreateAsync:
-                    InsertInto(X); Table(); InsertColumn(); Values(X); InsertValue(); End(X);
-                    list.Add(X.ToString());
-                    break;
                 case UiMethodEnum.CreateBatchAsync:
-                    LockTables(X); Table(); Write(X); End(X);
-                    DisableKeysS(X); Table(); DisableKeysE(X); End(X);
                     InsertInto(X); Table(); InsertColumn(); Values(X); InsertValue(); End(X);
-                    EnableKeysS(X); Table(); EnableKeysE(X); End(X);
-                    UnlockTables(X); End(X);
-                    list.Add(X.ToString());
+                    list.Add(X.ToString()); X.Clear();
                     break;
                 case UiMethodEnum.DeleteAsync:
-                    Delete(X); From(X); Table(); Where(X); End(X);
-                    list.Add(X.ToString());
+                    Delete(X); From(X); Table(); Where(); End(X);
+                    list.Add(X.ToString()); X.Clear();
                     break;
                 case UiMethodEnum.UpdateAsync:
-                    Update(X); Table(); Set(X); UpdateColumn(); Where(X); End(X);
-                    list.Add(X.ToString());
+                    Update(X); Table(); Set(X); UpdateColumn(); Where(); End(X);
+                    list.Add(X.ToString()); X.Clear();
                     break;
-                case UiMethodEnum.FirstOrDefaultAsync:
-                case UiMethodEnum.ListAsync:
                 case UiMethodEnum.TopAsync:
-                    Select(X); Distinct(X); SelectColumn(); From(X); Table(); Where(X); OrderBy(X); Limit(X); End(X);
-                    list.Add(X.ToString());
+                case UiMethodEnum.ListAsync:
+                case UiMethodEnum.AllAsync:
+                case UiMethodEnum.FirstOrDefaultAsync:
+                    Select(X); Distinct(); SelectColumn(); From(X); Table(); Where(); OrderBy(X); Limit(); End(X);
+                    list.Add(X.ToString()); X.Clear();
                     break;
                 case UiMethodEnum.PagingListAsync:
-                    Select(X); CountCD(X); From(X); Table(); Where(X); End(X);
-                    list.Add(X.ToString());
-                    X.Clear();
-                    Select(X); Distinct(X); SelectColumn(); From(X); Table(); Where(X); OrderBy(X); Limit(X); End(X);
-                    list.Add(X.ToString());
-                    break;
-                case UiMethodEnum.AllAsync:
-                    Select(X); Distinct(X); SelectColumn(); From(X); Table(); OrderBy(X); End(X);
-                    list.Add(X.ToString());
-                    break;
                 case UiMethodEnum.PagingAllListAsync:
-                    Select(X); CountCD(X); From(X); Table(); End(X);
-                    list.Add(X.ToString());
-                    X.Clear();
-                    Select(X); Distinct(X); SelectColumn(); From(X); Table(); OrderBy(X); Limit(X); End(X);
-                    list.Add(X.ToString());
+                    Select(X); CountCD(); From(X); Table(); Where(); End(X);
+                    list.Add(X.ToString()); X.Clear();
+                    Select(X); Distinct(); SelectColumn(); From(X); Table(); Where(); OrderBy(X); Limit(); End(X);
+                    list.Add(X.ToString()); X.Clear();
                     break;
                 case UiMethodEnum.ExistAsync:
                 case UiMethodEnum.CountAsync:
-                    Select(X); CountCD(X); From(X); Table(); Where(X); End(X);
-                    list.Add(X.ToString());
+                    Select(X); CountCD(); From(X); Table(); Where(); End(X);
+                    list.Add(X.ToString()); X.Clear();
                     break;
                 case UiMethodEnum.SumAsync:
-                    Select(X); Sum(X); From(X); Table(); Where(X); End(X);
-                    list.Add(X.ToString());
+                    Select(X); Sum(); From(X); Table(); Where(); End(X);
+                    list.Add(X.ToString()); X.Clear();
                     break;
             }
 
