@@ -19,5 +19,20 @@
         ///     密码
         /// </summary>
         public string Password { get; set; }
+
+        /// <summary>
+        /// 0 ~ 15
+        /// </summary>
+        public int DB { get; set; }
+
+        /// <summary>
+        /// 模块
+        /// </summary>
+        public string Module { get; set; }
+
+        /// <summary>
+        /// 功能
+        /// </summary>
+        public string Function { get; set; }
     }
 }

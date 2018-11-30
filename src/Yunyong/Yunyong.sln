@@ -3,35 +3,37 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Core", "Yunyong.Core\Yunyong.Core.csproj", "{AB84D6CA-9E0B-4507-9743-451B6E3D5358}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Core", "Yunyong.Core\Yunyong.Core.csproj", "{AB84D6CA-9E0B-4507-9743-451B6E3D5358}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventBus", "EventBus", "{996657A9-54A2-4F49-880B-0F8D42129E01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.EventBus", "EventBus\Yunyong.EventBus\Yunyong.EventBus.csproj", "{36DD206D-C272-45EA-8932-41D15037957A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.EventBus", "EventBus\Yunyong.EventBus\Yunyong.EventBus.csproj", "{36DD206D-C272-45EA-8932-41D15037957A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.EventBus.EasyNetQ", "EventBus\Yunyong.EventBus.EasyNetQ\Yunyong.EventBus.EasyNetQ.csproj", "{EDEBC8A1-A0A7-47DC-850B-15FB2D2F9768}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.EventBus.EasyNetQ", "EventBus\Yunyong.EventBus.EasyNetQ\Yunyong.EventBus.EasyNetQ.csproj", "{EDEBC8A1-A0A7-47DC-850B-15FB2D2F9768}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cache", "Cache", "{F1950E21-2761-474F-8E07-BB21D24B65A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Cache", "Cache\Yunyong.Cache\Yunyong.Cache.csproj", "{DAF3E51D-349B-496B-94C4-E7F9ED72C78D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Cache", "Cache\Yunyong.Cache\Yunyong.Cache.csproj", "{DAF3E51D-349B-496B-94C4-E7F9ED72C78D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Cache.Redis", "Cache\Yunyong.Cache.Redis\Yunyong.Cache.Redis.csproj", "{B6635B0C-2291-448B-B5AE-ED668DA2DF3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Cache.Redis", "Cache\Yunyong.Cache.Redis\Yunyong.Cache.Redis.csproj", "{B6635B0C-2291-448B-B5AE-ED668DA2DF3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Cache.Register", "Cache\Yunyong.Cache.Register\Yunyong.Cache.Register.csproj", "{4DF6A113-E67A-457C-9FCA-6AC8CDBFE365}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Cache.Register", "Cache\Yunyong.Cache.Register\Yunyong.Cache.Register.csproj", "{4DF6A113-E67A-457C-9FCA-6AC8CDBFE365}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.SqlUtils", "Yunyong.SqlUtils\Yunyong.SqlUtils.csproj", "{C54B30E6-F38E-4E2E-9EE2-08035BBE6A6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.SqlUtils", "Yunyong.SqlUtils\Yunyong.SqlUtils.csproj", "{C54B30E6-F38E-4E2E-9EE2-08035BBE6A6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Mvc", "Yunyong.Mvc\Yunyong.Mvc.csproj", "{D21C1B64-DDC6-49D8-96C7-B6D9DE9707FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Mvc", "Yunyong.Mvc\Yunyong.Mvc.csproj", "{D21C1B64-DDC6-49D8-96C7-B6D9DE9707FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.DataExchange", "Yunyong.DataExchange\Yunyong.DataExchange.csproj", "{D0991F52-2047-40AE-9007-1205D8248359}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.DataExchange", "Yunyong.DataExchange\Yunyong.DataExchange.csproj", "{D0991F52-2047-40AE-9007-1205D8248359}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Mapper", "Yunyong.Mapper\Yunyong.Mapper.csproj", "{BDD1C81C-135B-4BDE-BE13-95CB95CF7A2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Mapper", "Yunyong.Mapper\Yunyong.Mapper.csproj", "{BDD1C81C-135B-4BDE-BE13-95CB95CF7A2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Configuration", "Yunyong.Configuration\Yunyong.Configuration.csproj", "{27182964-D462-45C2-B8F7-74781AC4A740}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Configuration", "Yunyong.Configuration\Yunyong.Configuration.csproj", "{27182964-D462-45C2-B8F7-74781AC4A740}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3D7D73E4-5F5B-4264-A4FF-5004EFF39F2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Configuration.Tests", "Tests\Yunyong.Configuration.Tests\Yunyong.Configuration.Tests.csproj", "{6385EFBC-F53F-4206-9043-8757E7C7F4E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Configuration.Tests", "Tests\Yunyong.Configuration.Tests\Yunyong.Configuration.Tests.csproj", "{6385EFBC-F53F-4206-9043-8757E7C7F4E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Redis", "Yunyong.Redis\Yunyong.Redis.csproj", "{A8E44DE1-8F5B-43B0-9667-99D7C774483C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,9 +43,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AB84D6CA-9E0B-4507-9743-451B6E3D5358}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -190,6 +189,21 @@ Global
 		{6385EFBC-F53F-4206-9043-8757E7C7F4E3}.Release|x64.Build.0 = Release|Any CPU
 		{6385EFBC-F53F-4206-9043-8757E7C7F4E3}.Release|x86.ActiveCfg = Release|Any CPU
 		{6385EFBC-F53F-4206-9043-8757E7C7F4E3}.Release|x86.Build.0 = Release|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|x64.Build.0 = Release|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{36DD206D-C272-45EA-8932-41D15037957A} = {996657A9-54A2-4F49-880B-0F8D42129E01}
@@ -198,5 +212,8 @@ Global
 		{B6635B0C-2291-448B-B5AE-ED668DA2DF3B} = {F1950E21-2761-474F-8E07-BB21D24B65A0}
 		{4DF6A113-E67A-457C-9FCA-6AC8CDBFE365} = {F1950E21-2761-474F-8E07-BB21D24B65A0}
 		{6385EFBC-F53F-4206-9043-8757E7C7F4E3} = {3D7D73E4-5F5B-4264-A4FF-5004EFF39F2A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AA23ED5D-7F65-49F9-96C4-68F8B396993E}
 	EndGlobalSection
 EndGlobal
