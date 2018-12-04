@@ -18,6 +18,6 @@
         /// <summary>
         ///     页面大小
         /// </summary>
-        public int PageSize { get; set; }
+        public int PageSize { get; set; } = 10;
     }
 }
