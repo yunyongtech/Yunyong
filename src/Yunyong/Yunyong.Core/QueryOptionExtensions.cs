@@ -12,7 +12,7 @@ namespace Yunyong.Core
         /// <summary>
         ///     组装查询条件
         /// </summary>
-        public static object GetCondition(this IQueryOption target)
+        public static IDictionary<string, object> GetCondition(this IQueryOption target)
         {
             if (target == null)
             {

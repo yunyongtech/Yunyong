@@ -40,6 +40,15 @@
         /// </summary>
         public string ErrorMessage { get; }
 
+        public static AsyncTaskResult Success(string msg = null)
+        {
+            return new AsyncTaskResult(AsyncTaskStatus.Success, msg);
+        }
+
+        public static AsyncTaskResult Failed(string msg)
+        {
+            return new AsyncTaskResult(AsyncTaskStatus.Failed, msg);
+        }
         public static AsyncTaskTResult<T> Success<T>(T data)
         {
             return new AsyncTaskTResult<T>(data);
