@@ -28,7 +28,7 @@ namespace Yunyong.DataExchange
         /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public static WhereD<M> Where<M>(this Deleter<M> deleter, object mWhere)
-            where M:class
+            where M : class
         {
             deleter.DC.Action = ActionEnum.Where;
             deleter.WhereDynamicHandle<M>(mWhere);
@@ -52,7 +52,7 @@ namespace Yunyong.DataExchange
         /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public static WhereU<M> Where<M>(this SetU<M> set, object mWhere)
-            where M:class
+            where M : class
         {
             set.DC.Action = ActionEnum.Where;
             set.WhereDynamicHandle<M>(mWhere);
@@ -64,7 +64,7 @@ namespace Yunyong.DataExchange
         /// <summary>
         /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static WhereQ<M> Where<M>(this Selecter<M> selecter, Expression<Func<M, bool>> compareFunc)
+        public static WhereQ<M> Where<M>(this Queryer<M> selecter, Expression<Func<M, bool>> compareFunc)
             where M : class
         {
             selecter.DC.Action = ActionEnum.Where;
@@ -75,7 +75,7 @@ namespace Yunyong.DataExchange
         /// <summary>
         /// 请参阅: <see langword=".Where() &amp; .And() &amp; .Or() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static WhereQ<M> Where<M>(this Selecter<M> selecter, object mWhere)
+        public static WhereQ<M> Where<M>(this Queryer<M> selecter, object mWhere)
             where M : class
         {
             selecter.DC.Action = ActionEnum.Where;

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Yunyong.DataExchange.Core;
 using Yunyong.DataExchange.Core.Bases;
@@ -78,11 +76,11 @@ namespace Yunyong.DataExchange.AdoNet
             paramReader?.Invoke(cmd, comm.Parameter);
             return cmd as DbCommand;
         }
-        internal ConfiguredTaskAwaitable OpenAsync(IDbConnection cnn)
+        internal async Task OpenAsync(IDbConnection cnn)
         {
             if (cnn is DbConnection dbConn)
             {
-                return dbConn.OpenAsync(default(CancellationToken)).ConfigureAwait(false);
+                await dbConn.OpenAsync();
             }
             else
             {
@@ -111,10 +109,10 @@ namespace Yunyong.DataExchange.AdoNet
         }
         private Task<DbDataReader> ExecuteReaderWithFlagsFallbackAsync(DbCommand cmd, bool wasClosed, CommandBehavior behavior)
         {
-            var task = cmd.ExecuteReaderAsync(GetBehavior(wasClosed, behavior), default(CancellationToken));
+            var task = cmd.ExecuteReaderAsync(GetBehavior(wasClosed, behavior));
             if (task.Status == TaskStatus.Faulted && DisableCommandBehaviorOptimizations(behavior, task.Exception.InnerException))
             {
-                return cmd.ExecuteReaderAsync(GetBehavior(wasClosed, behavior), default(CancellationToken));
+                return cmd.ExecuteReaderAsync(GetBehavior(wasClosed, behavior));
             }
             return task;
         }
@@ -124,7 +122,37 @@ namespace Yunyong.DataExchange.AdoNet
             var result = new List<F>();
             if (IsDateTimeYearColumn(out var dic))
             {
-                while (await Reader.ReadAsync(default(CancellationToken)).ConfigureAwait(false))
+                while (await Reader.ReadAsync())
+                {
+                    result.Add(
+                        DC.GH.ConvertT<F>(
+                            new DateTime(
+                                Reader.GetInt32(
+                                    Reader.GetOrdinal(
+                                        dic.Option == OptionEnum.Column
+                                            ? dic.ColumnOne
+                                            : dic.Option == OptionEnum.ColumnAs
+                                                ? dic.ColumnOneAlias
+                                                : throw new Exception($"{XConfig.EC._016} -- [[{dic.Option}]] 不能解析!!!"))), 1, 1).ToString(dic.Format)));
+                }
+            }
+            else
+            {
+                var func = DC.SC.GetHandle<M>(SqlOne, Reader);
+                while (await Reader.ReadAsync())
+                {
+                    result.Add(propertyFunc(func(Reader)));
+                }
+            }
+            while (await Reader.NextResultAsync()) { }
+            return result;
+        }
+        private async Task<List<F>> ReadColumn<F>()
+        {
+            var result = new List<F>();
+            if (IsDateTimeYearColumn(out var dic))
+            {
+                while (await Reader.ReadAsync())
                 {
                     result.Add(
                         DC.GH.ConvertT<F>(
@@ -140,13 +168,16 @@ namespace Yunyong.DataExchange.AdoNet
             }
             else
             {
-                var func = DC.SC.GetHandle<M>(SqlOne, Reader);
-                while (await Reader.ReadAsync(default(CancellationToken)).ConfigureAwait(false))
+                dic = DC.Parameters.First(it => it.Crud == CrudTypeEnum.Join && it.Action == ActionEnum.Select && it.Option == OptionEnum.Column);
+                var func = DC.SC.GetHandle(SqlOne, Reader, DC.SC.GetModelType(dic.Key));
+                var prop = DC.SC.GetModelProperys(dic.Key).FirstOrDefault(it => it.Name.Equals(dic.PropOne, StringComparison.Ordinal));
+                while (await Reader.ReadAsync())
                 {
-                    result.Add(propertyFunc(func(Reader)));
+                    var obj = func(Reader);
+                    result.Add(DC.GH.ConvertT<F>(prop.GetValue(obj)));
                 }
             }
-            while (await Reader.NextResultAsync(default(CancellationToken)).ConfigureAwait(false)) { }
+            while (await Reader.NextResultAsync()) { }
             return result;
         }
 
@@ -175,50 +206,18 @@ namespace Yunyong.DataExchange.AdoNet
                 try
                 {
                     if (needClose) { await OpenAsync(Conn); }
-                    reader = await ExecuteReaderWithFlagsFallbackAsync(cmd, needClose, XConfig.MultiRow).ConfigureAwait(false);
+                    reader = await ExecuteReaderWithFlagsFallbackAsync(cmd, needClose, XConfig.MultiRow);
                     if (reader.FieldCount == 0)
                     {
                         return new List<M>();
                     }
                     var func = DC.SC.GetHandle<M>(SqlCount == 1 ? SqlOne : SqlTwo, reader);
                     var result = new List<M>();
-                    while (await reader.ReadAsync(default(CancellationToken)).ConfigureAwait(false))
+                    while (await reader.ReadAsync())
                     {
                         result.Add(func(reader));
                     }
-                    while (await reader.NextResultAsync(default(CancellationToken)).ConfigureAwait(false)) { }
-                    return result;
-                }
-                finally
-                {
-                    using (reader) { }
-                    if (needClose) { Conn.Close(); }
-                }
-            }
-        }
-
-        /*
-         * ado.net -- DbCommand.[Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)]
-         * select -- 第一行
-         */
-        internal async Task<M> ExecuteReaderSingleRowAsync<M>()
-        {
-            var comm = new CommandInfo(SqlOne, Parameter);
-            var needClose = Conn.State == ConnectionState.Closed;
-            using (var cmd = SettingCommand(comm, Conn, comm.Parameter.ParamReader))
-            {
-                DbDataReader reader = null;
-                try
-                {
-                    if (needClose) { await OpenAsync(Conn); }
-                    reader = await ExecuteReaderWithFlagsFallbackAsync(cmd, needClose, XConfig.SingleRow).ConfigureAwait(false);
-                    var result = default(M);
-                    if (await reader.ReadAsync(default(CancellationToken)).ConfigureAwait(false) && reader.FieldCount != 0)
-                    {
-                        result = DC.SC.GetHandle<M>(SqlOne, reader)(reader);
-                        while (await reader.ReadAsync(default(CancellationToken)).ConfigureAwait(false)) { }
-                    }
-                    while (await reader.NextResultAsync(default(CancellationToken)).ConfigureAwait(false)) { }
+                    while (await reader.NextResultAsync()) { }
                     return result;
                 }
                 finally
@@ -236,15 +235,39 @@ namespace Yunyong.DataExchange.AdoNet
         internal async Task<List<F>> ExecuteReaderSingleColumnAsync<M, F>(Func<M, F> propertyFunc)
             where M : class
         {
-            var comm = new CommandInfo(SqlOne, Parameter);
+            var comm = new CommandInfo(SqlCount == 1 ? SqlOne : SqlTwo, Parameter);
             var needClose = Conn.State == ConnectionState.Closed;
             using (var cmd = SettingCommand(comm, Conn, comm.Parameter.ParamReader))
             {
                 try
                 {
                     if (needClose) { await OpenAsync(Conn); }
-                    Reader = await ExecuteReaderWithFlagsFallbackAsync(cmd, needClose, XConfig.MultiRow).ConfigureAwait(false);
+                    Reader = await ExecuteReaderWithFlagsFallbackAsync(cmd, needClose, XConfig.MultiRow);
                     return await ReadColumn(propertyFunc);
+                }
+                finally
+                {
+                    using (Reader) { }
+                    if (needClose) { Conn.Close(); }
+                }
+            }
+        }
+
+        /*
+         * ado.net -- DbCommand.[Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)]
+         * select -- 单列
+         */
+        internal async Task<List<F>> ExecuteReaderSingleColumnAsync<F>()
+        {
+            var comm = new CommandInfo(SqlCount == 1 ? SqlOne : SqlTwo, Parameter);
+            var needClose = Conn.State == ConnectionState.Closed;
+            using (var cmd = SettingCommand(comm, Conn, comm.Parameter.ParamReader))
+            {
+                try
+                {
+                    if (needClose) { await OpenAsync(Conn); }
+                    Reader = await ExecuteReaderWithFlagsFallbackAsync(cmd, needClose, XConfig.MultiRow);
+                    return await ReadColumn<F>();
                 }
                 finally
                 {
@@ -268,7 +291,7 @@ namespace Yunyong.DataExchange.AdoNet
                 try
                 {
                     if (needClose) { await OpenAsync(Conn); }
-                    var result = await cmd.ExecuteNonQueryAsync(default(CancellationToken)).ConfigureAwait(false);
+                    var result = await cmd.ExecuteNonQueryAsync();
                     return result;
                 }
                 finally
@@ -293,7 +316,7 @@ namespace Yunyong.DataExchange.AdoNet
             {
                 cmd = SettingCommand(comm, Conn, comm.Parameter.ParamReader);
                 if (needClose) { await OpenAsync(Conn); }
-                result = await cmd.ExecuteScalarAsync(default(CancellationToken)).ConfigureAwait(false);
+                result = await cmd.ExecuteScalarAsync();
             }
             finally
             {

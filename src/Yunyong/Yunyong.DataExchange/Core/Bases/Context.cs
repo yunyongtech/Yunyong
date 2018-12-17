@@ -41,6 +41,7 @@ namespace Yunyong.DataExchange.Core.Bases
             DPH = new DicParamHelper(this);
             BDH = new BatchDataHelper();
             DS = new DataSource(this);
+            AR = new AutoRetry();
 
             //
             if (XConfig.DB == DbEnum.MySQL)
@@ -55,6 +56,7 @@ namespace Yunyong.DataExchange.Core.Bases
         internal GenericHelper GH { get; private set; }
         internal ParameterHelper PH { get; private set; }
         internal BatchDataHelper BDH { get; private set; }
+        internal AutoRetry AR { get; private set; }
 
         /************************************************************************************************************************/
 
@@ -79,7 +81,7 @@ namespace Yunyong.DataExchange.Core.Bases
         internal string SingleOpName { get; set; }
         internal int DicID { get; set; } = 1;
         internal List<DicParam> Parameters { get; set; }
-        internal List<string> SQL { get; set; }
+        internal List<string> SQL { get; private set; } = new List<string>();
         internal int? PageIndex { get; set; } = null;
         internal int? PageSize { get; set; } = null;
 

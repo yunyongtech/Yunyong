@@ -28,7 +28,7 @@ namespace Yunyong.DataExchange.Core.Bases
                 DC.Compare = CompareEnum.None;
                 list.Add(DC.DPH.InsertHelperDic(fullName, prop.Name, val, prop.PropertyType));
             }
-            DC.DPH.AddParameter(DC.DPH.InsertDic(fullName,list));
+            DC.DPH.AddParameter(DC.DPH.InsertDic(fullName, list));
         }
 
         /**********************************************************************************************************/
@@ -44,15 +44,22 @@ namespace Yunyong.DataExchange.Core.Bases
             result.Data = await DC.DS.ExecuteReaderMultiRowAsync<M>();
             return result;
         }
-        protected async Task<PagingList<VM>> PagingListAsyncHandle<M, VM>(int pageIndex, int pageSize, UiMethodEnum sqlType)
-            where VM : class
+        protected async Task<PagingList<T>> PagingListAsyncHandle<M, T>(UiMethodEnum sqlType, bool single, Func<M, T> mapFunc)
+            where M : class
         {
-            var result = new PagingList<VM>();
-            DC.PageIndex = result.PageIndex = pageIndex;
-            DC.PageSize = result.PageSize = pageSize;
+            var result = new PagingList<T>();
+            result.PageIndex = DC.PageIndex.Value;
+            result.PageSize = DC.PageSize.Value;
             PreExecuteHandle(sqlType);
             result.TotalCount = await DC.DS.ExecuteScalarAsync<int>();
-            result.Data = await DC.DS.ExecuteReaderMultiRowAsync<VM>();
+            if (single)
+            {
+                result.Data = await DC.DS.ExecuteReaderSingleColumnAsync(mapFunc);
+            }
+            else
+            {
+                result.Data = await DC.DS.ExecuteReaderMultiRowAsync<T>();
+            }
             return result;
         }
 
@@ -65,6 +72,12 @@ namespace Yunyong.DataExchange.Core.Bases
             DC.Option = OptionEnum.Column;
             DC.DPH.AddParameter(DC.EH.FuncMFExpression(propertyFunc)[0]);
         }
+        protected void SingleColumnHandle<T>(Expression<Func<T>> propertyFunc)
+        {
+            DC.Action = ActionEnum.Select;
+            DC.Option = OptionEnum.Column;
+            DC.DPH.AddParameter(DC.EH.FuncTExpression(propertyFunc)[0]);
+        }
 
         /**********************************************************************************************************/
 
@@ -73,12 +86,12 @@ namespace Yunyong.DataExchange.Core.Bases
             DC.Action = ActionEnum.Select;
             var mType = typeof(M);
             var fullName = mType.FullName;
-            var tab = DC.Parameters.FirstOrDefault(it => fullName.Equals(it.ClassFullName, StringComparison.OrdinalIgnoreCase));
-            if (tab != null)
+            var dic = DC.Parameters.FirstOrDefault(it => fullName.Equals(it.ClassFullName, StringComparison.OrdinalIgnoreCase));
+            if (dic != null)
             {
                 DC.Option = OptionEnum.Column;
                 DC.Compare = CompareEnum.None;
-                DC.DPH.AddParameter(DC.DPH.ColumnDic("*", tab.TableAliasOne, fullName));
+                DC.DPH.AddParameter(DC.DPH.ColumnDic("*", dic.TableAliasOne, fullName, dic.PropOne));
             }
             else if (DC.Parameters.Count == 0)
             {
@@ -115,7 +128,7 @@ namespace Yunyong.DataExchange.Core.Bases
                     {
                         if (prop.Name.Equals(vProp.Name, StringComparison.OrdinalIgnoreCase))
                         {
-                            DC.DPH.AddParameter(DC.DPH.ColumnDic(prop.Name, tab.TableAliasOne, fullName));
+                            DC.DPH.AddParameter(DC.DPH.ColumnDic(prop.Name, tab.TableAliasOne, fullName, prop.Name));
                         }
                     }
                 }

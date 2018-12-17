@@ -18,6 +18,13 @@
         internal string _011 { get; } = "011";
         internal string _012 { get; } = "012";
         internal string _013 { get; } = "013";
+        internal string _014 { get; } = "014";
+        internal string _015 { get; } = "015";
+        internal string _016 { get; } = "016";
+        internal string _017 { get; } = "017";
+        internal string _018 { get; } = "018";
+        internal string _019 { get; } = "019";
+        internal string _020 { get; } = "020";
 
     }
 }

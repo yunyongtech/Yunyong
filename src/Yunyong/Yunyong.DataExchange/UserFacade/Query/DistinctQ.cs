@@ -10,7 +10,7 @@ using Yunyong.DataExchange.Interfaces;
 namespace Yunyong.DataExchange.UserFacade.Query
 {
     public sealed class DistinctQ<M>
-        : Operator, IAll<M>, IAllPagingList<M>, ITop<M>, IFirstOrDefault<M>, Interfaces.IList<M>, IPagingList<M>, IPagingListO<M>, ICount<M>
+        : Operator, IAll<M>, IAllPagingList<M>, ITop<M>, IFirstOrDefault<M>, Interfaces.IList<M>, IPagingList<M>, IPagingListO<M>
         where M : class
     {
         internal DistinctQ(Context dc) 
@@ -62,6 +62,10 @@ namespace Yunyong.DataExchange.UserFacade.Query
             where VM : class
         {
             return await new AllPagingListImpl<M>(DC).PagingAllListAsync<VM>(pageIndex, pageSize);
+        }
+        public async Task<PagingList<T>> PagingAllListAsync<T>(int pageIndex, int pageSize, Expression<Func<M, T>> columnMapFunc)
+        {
+            return await new AllPagingListImpl<M>(DC).PagingAllListAsync<T>(pageIndex, pageSize, columnMapFunc);
         }
 
         /// <summary>
@@ -190,10 +194,9 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <typeparam name="VM">ViewModel</typeparam>
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
-        public async Task<PagingList<VM>> PagingListAsync<VM>(int pageIndex, int pageSize, Expression<Func<M, VM>> columnMapFunc)
-            where VM : class
+        public async Task<PagingList<T>> PagingListAsync<T>(int pageIndex, int pageSize, Expression<Func<M, T>> columnMapFunc)
         {
-            return await new PagingListImpl<M>(DC).PagingListAsync<VM>(pageIndex, pageSize, columnMapFunc);
+            return await new PagingListImpl<M>(DC).PagingListAsync<T>(pageIndex, pageSize, columnMapFunc);
         }
 
         /// <summary>
@@ -222,26 +225,10 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <typeparam name="VM">ViewModel</typeparam>
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
-        public async Task<PagingList<VM>> PagingListAsync<VM>(PagingQueryOption option, Expression<Func<M, VM>> columnMapFunc)
-            where VM : class
+        public async Task<PagingList<T>> PagingListAsync<T>(PagingQueryOption option, Expression<Func<M, T>> columnMapFunc)
         {
-            return await new PagingListOImpl<M>(DC).PagingListAsync<VM>(option, columnMapFunc);
+            return await new PagingListOImpl<M>(DC).PagingListAsync<T>(option, columnMapFunc);
         }
-
-        /// <summary>
-        /// 查询符合条件数据条目数
-        /// </summary>
-        public async Task<int> CountAsync()
-        {
-            return await new CountImpl<M>(DC).CountAsync();
-        }
-        /// <summary>
-        /// 查询符合条件数据条目数
-        /// </summary>
-        public async Task<int> CountAsync<F>(Expression<Func<M, F>> propertyFunc)
-        {
-            return await new CountImpl<M>(DC).CountAsync(propertyFunc);
-        }
-
+        
     }
 }

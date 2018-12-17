@@ -45,17 +45,12 @@ namespace Yunyong.DataExchange.Impls
         public async Task<M> FirstOrDefaultAsync<M>()
             where M : class
         {
-            SelectMHandle<M>();
-            PreExecuteHandle(UiMethodEnum.FirstOrDefaultAsync);
-            return await DC.DS.ExecuteReaderSingleRowAsync<M>();
+            return (await new TopXImpl(DC).TopAsync<M>(1)).FirstOrDefault();
         }
 
-        public async Task<VM> FirstOrDefaultAsync<VM>(Expression<Func<VM>> func)
-            where VM : class
+        public async Task<T> FirstOrDefaultAsync<T>(Expression<Func<T>> columnMapFunc)
         {
-            SelectMHandle(func);
-            PreExecuteHandle(UiMethodEnum.FirstOrDefaultAsync);
-            return await DC.DS.ExecuteReaderSingleRowAsync<VM>();
+            return (await new TopXImpl(DC).TopAsync(1, columnMapFunc)).FirstOrDefault();
         }
     }
 }
