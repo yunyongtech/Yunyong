@@ -12,7 +12,7 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>MyDAL,Yunyong.DataExchange</PackageTags>
+    <PackageTags>Yunyong.DataExchange</PackageTags>
     <PackageReleaseNotes>由一个开发项目中的 idea 演变,产生与实现!</PackageReleaseNotes>
     <ApplicationIcon>Others\favicon.ico</ApplicationIcon>
     <Win32Resource />
