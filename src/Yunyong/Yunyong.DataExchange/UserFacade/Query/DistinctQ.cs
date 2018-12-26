@@ -10,7 +10,7 @@ using Yunyong.DataExchange.Interfaces;
 namespace Yunyong.DataExchange.UserFacade.Query
 {
     public sealed class DistinctQ<M>
-        : Operator, IAll<M>, IAllPagingList<M>, ITop<M>, IFirstOrDefault<M>, Interfaces.IList<M>, IPagingList<M>, IPagingListO<M>
+        : Operator, IAll<M>, IPagingAll<M>, ITop<M>, IFirstOrDefault<M>, Interfaces.IList<M>, IPagingList<M>, IPagingListO<M>
         where M : class
     {
         internal DistinctQ(Context dc) 
@@ -47,9 +47,9 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         /// <returns>返回全表分页数据</returns>
-        public async Task<PagingList<M>> PagingAllListAsync(int pageIndex, int pageSize)
+        public async Task<PagingList<M>> PagingAllAsync(int pageIndex, int pageSize)
         {
-            return await new AllPagingListImpl<M>(DC).PagingAllListAsync(pageIndex, pageSize);
+            return await new PagingAllImpl<M>(DC).PagingAllAsync(pageIndex, pageSize);
         }
         /// <summary>
         /// 单表分页查询
@@ -58,14 +58,14 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         /// <returns>返回全表分页数据</returns>
-        public async Task<PagingList<VM>> PagingAllListAsync<VM>(int pageIndex, int pageSize)
+        public async Task<PagingList<VM>> PagingAllAsync<VM>(int pageIndex, int pageSize)
             where VM : class
         {
-            return await new AllPagingListImpl<M>(DC).PagingAllListAsync<VM>(pageIndex, pageSize);
+            return await new PagingAllImpl<M>(DC).PagingAllAsync<VM>(pageIndex, pageSize);
         }
-        public async Task<PagingList<T>> PagingAllListAsync<T>(int pageIndex, int pageSize, Expression<Func<M, T>> columnMapFunc)
+        public async Task<PagingList<T>> PagingAllAsync<T>(int pageIndex, int pageSize, Expression<Func<M, T>> columnMapFunc)
         {
-            return await new AllPagingListImpl<M>(DC).PagingAllListAsync<T>(pageIndex, pageSize, columnMapFunc);
+            return await new PagingAllImpl<M>(DC).PagingAllAsync<T>(pageIndex, pageSize, columnMapFunc);
         }
 
         /// <summary>
@@ -123,23 +123,22 @@ namespace Yunyong.DataExchange.UserFacade.Query
         }
 
         /// <summary>
-        /// 单表多条数据查询
+        /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public async Task<List<M>> ListAsync()
         {
             return await new ListImpl<M>(DC).ListAsync();
         }
         /// <summary>
-        /// 单表多条数据查询
+        /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        /// <typeparam name="VM">ViewModel</typeparam>
         public async Task<List<VM>> ListAsync<VM>()
             where VM : class
         {
             return await new ListImpl<M>(DC).ListAsync<VM>();
         }
         /// <summary>
-        /// 单表多条数据查询
+        /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public async Task<List<T>> ListAsync<T>(Expression<Func<M, T>> columnMapFunc)
         {
@@ -191,9 +190,6 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <summary>
         /// 单表分页查询
         /// </summary>
-        /// <typeparam name="VM">ViewModel</typeparam>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<T>> PagingListAsync<T>(int pageIndex, int pageSize, Expression<Func<M, T>> columnMapFunc)
         {
             return await new PagingListImpl<M>(DC).PagingListAsync<T>(pageIndex, pageSize, columnMapFunc);
@@ -202,8 +198,6 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <summary>
         /// 单表分页查询
         /// </summary>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<M>> PagingListAsync(PagingQueryOption option)
         {
             return await new PagingListOImpl<M>(DC).PagingListAsync(option);
@@ -211,9 +205,6 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <summary>
         /// 单表分页查询
         /// </summary>
-        /// <typeparam name="VM">ViewModel</typeparam>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<VM>> PagingListAsync<VM>(PagingQueryOption option)
             where VM : class
         {
@@ -222,9 +213,6 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <summary>
         /// 单表分页查询
         /// </summary>
-        /// <typeparam name="VM">ViewModel</typeparam>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<T>> PagingListAsync<T>(PagingQueryOption option, Expression<Func<M, T>> columnMapFunc)
         {
             return await new PagingListOImpl<M>(DC).PagingListAsync<T>(option, columnMapFunc);

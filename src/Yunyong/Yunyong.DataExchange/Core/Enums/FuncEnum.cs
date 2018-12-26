@@ -8,11 +8,6 @@ namespace Yunyong.DataExchange.Core.Enums
         /// ""
         /// </summary>
         None,
-
-        /// <summary>
-        /// ""
-        /// </summary>
-        Column,
         
         /// <summary>
         /// " char_length"
@@ -45,7 +40,17 @@ namespace Yunyong.DataExchange.Core.Enums
         /// " not in "
         /// </summary>
         NotIn,
-        InHelper
+        InHelper,
+
+        /// <summary>
+        /// " count"
+        /// </summary>
+        Count,
+
+        /// <summary>
+        /// " sum"
+        /// </summary>
+        Sum
 
     }
 }

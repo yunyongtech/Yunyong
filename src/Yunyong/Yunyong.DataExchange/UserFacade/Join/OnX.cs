@@ -9,19 +9,29 @@ using Yunyong.DataExchange.Interfaces;
 
 namespace Yunyong.DataExchange.UserFacade.Join
 {
-    public sealed  class OnX 
-        : Operator, IFirstOrDefaultX, IListX, IPagingListX, IPagingListXO,ITopX
+    public sealed class OnX
+        : Operator, IFirstOrDefaultX, IListX, IPagingListX, IPagingListXO, ITopX, IAllX
     {
 
         internal OnX(Context dc)
             : base(dc)
         { }
 
+        public async Task<List<M>> AllAsync<M>()
+            where M : class
+        {
+            return await new AllXImpl(DC).AllAsync<M>();
+        }
+        public async Task<List<T>> AllAsync<T>(Expression<Func<T>> columnMapFunc)
+        {
+            return await new AllXImpl(DC).AllAsync(columnMapFunc);
+        }
+
         /// <summary>
         /// 多表单条数据查询
         /// </summary>
         public async Task<M> FirstOrDefaultAsync<M>()
-            where M:class
+            where M : class
         {
             return await new FirstOrDefaultXImpl(DC).FirstOrDefaultAsync<M>();
         }
@@ -35,15 +45,15 @@ namespace Yunyong.DataExchange.UserFacade.Join
         }
 
         /// <summary>
-        /// 多表多条数据查询
+        /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public async Task<List<M>> ListAsync<M>()
-            where M:class
+            where M : class
         {
             return await new ListXImpl(DC).ListAsync<M>();
         }
         /// <summary>
-        /// 多表多条数据查询
+        /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public async Task<List<T>> ListAsync<T>(Expression<Func<T>> columnMapFunc)
         {
@@ -72,42 +82,34 @@ namespace Yunyong.DataExchange.UserFacade.Join
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<M>> PagingListAsync<M>(int pageIndex, int pageSize)
-            where M:class
+            where M : class
         {
             return await new PagingListXImpl(DC).PagingListAsync<M>(pageIndex, pageSize);
         }
         /// <summary>
         /// 多表分页查询
         /// </summary>
-        /// <typeparam name="VM">ViewModel</typeparam>
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
-        public async Task<PagingList<VM>> PagingListAsync<VM>(int pageIndex, int pageSize, Expression<Func<VM>> columnMapFunc)
-            where VM:class
+        public async Task<PagingList<T>> PagingListAsync<T>(int pageIndex, int pageSize, Expression<Func<T>> columnMapFunc)
         {
-            return await new PagingListXImpl(DC).PagingListAsync<VM>(pageIndex, pageSize, columnMapFunc);
+            return await new PagingListXImpl(DC).PagingListAsync(pageIndex, pageSize, columnMapFunc);
         }
 
         /// <summary>
         /// 多表分页查询
         /// </summary>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<M>> PagingListAsync<M>(PagingQueryOption option)
-            where M:class
+            where M : class
         {
             return await new PagingListXOImpl(DC).PagingListAsync<M>(option);
         }
         /// <summary>
         /// 多表分页查询
         /// </summary>
-        /// <typeparam name="VM">ViewModel</typeparam>
-        /// <param name="pageIndex">页码</param>
-        /// <param name="pageSize">每页条数</param>
-        public async Task<PagingList<VM>> PagingListAsync<VM>(PagingQueryOption option, Expression<Func<VM>> columnMapFunc)
-            where VM:class
+        public async Task<PagingList<T>> PagingListAsync<T>(PagingQueryOption option, Expression<Func<T>> columnMapFunc)
         {
-            return await new PagingListXOImpl(DC).PagingListAsync<VM>(option, columnMapFunc);
+            return await new PagingListXOImpl(DC).PagingListAsync(option, columnMapFunc);
         }
 
         /// <summary>

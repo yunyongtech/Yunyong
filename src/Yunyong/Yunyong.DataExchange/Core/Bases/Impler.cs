@@ -16,9 +16,9 @@ namespace Yunyong.DataExchange.Core.Bases
 
         private void SetInsertValue<M>(M m, int index)
         {
-            var key = DC.SC.GetModelKey(m.GetType().FullName);
-            var props = DC.SC.GetModelProperys(key);
-            var columns = DC.SC.GetColumnInfos(key);
+            var key = DC.XC.GetModelKey(m.GetType().FullName);
+            var props = DC.XC.GetModelProperys(key);
+            var columns = DC.XC.GetColumnInfos(key);
             var fullName = typeof(M).FullName;
 
             var list = new List<DicParam>();
@@ -33,15 +33,21 @@ namespace Yunyong.DataExchange.Core.Bases
 
         /**********************************************************************************************************/
 
-        protected async Task<PagingList<M>> PagingListAsyncHandle<M>(int pageIndex, int pageSize, UiMethodEnum sqlType)
-            where M : class
+        protected async Task<PagingList<T>> PagingListAsyncHandle<T>(UiMethodEnum sqlType, bool single)
         {
-            var result = new PagingList<M>();
-            DC.PageIndex = result.PageIndex = pageIndex;
-            DC.PageSize = result.PageSize = pageSize;
+            var result = new PagingList<T>();
+            result.PageIndex = DC.PageIndex.Value;
+            result.PageSize = DC.PageSize.Value;
             PreExecuteHandle(sqlType);
             result.TotalCount = await DC.DS.ExecuteScalarAsync<int>();
-            result.Data = await DC.DS.ExecuteReaderMultiRowAsync<M>();
+            if (single)
+            {
+                result.Data = await DC.DS.ExecuteReaderSingleColumnAsync<T>();
+            }
+            else
+            {
+                result.Data = await DC.DS.ExecuteReaderMultiRowAsync<T>();
+            }
             return result;
         }
         protected async Task<PagingList<T>> PagingListAsyncHandle<M, T>(UiMethodEnum sqlType, bool single, Func<M, T> mapFunc)
@@ -70,13 +76,15 @@ namespace Yunyong.DataExchange.Core.Bases
         {
             DC.Action = ActionEnum.Select;
             DC.Option = OptionEnum.Column;
-            DC.DPH.AddParameter(DC.EH.FuncMFExpression(propertyFunc)[0]);
+            var col = DC.EH.FuncMFExpression(propertyFunc);
+            DC.DPH.AddParameter(col);
         }
         protected void SingleColumnHandle<T>(Expression<Func<T>> propertyFunc)
         {
             DC.Action = ActionEnum.Select;
             DC.Option = OptionEnum.Column;
-            DC.DPH.AddParameter(DC.EH.FuncTExpression(propertyFunc)[0]);
+            var col = DC.EH.FuncTExpression(propertyFunc);
+            DC.DPH.AddParameter(col);
         }
 
         /**********************************************************************************************************/
@@ -91,7 +99,8 @@ namespace Yunyong.DataExchange.Core.Bases
             {
                 DC.Option = OptionEnum.Column;
                 DC.Compare = CompareEnum.None;
-                DC.DPH.AddParameter(DC.DPH.ColumnDic("*", dic.TableAliasOne, fullName, dic.PropOne));
+                var col = DC.DPH.SelectColumnDic(new List<DicParam> { DC.DPH.ColumnDic("*", dic.TableAliasOne, fullName, dic.PropOne) });
+                DC.DPH.AddParameter(col);
             }
             else if (DC.Parameters.Count == 0)
             {
@@ -114,24 +123,26 @@ namespace Yunyong.DataExchange.Core.Bases
 
             //
             DC.Action = ActionEnum.Select;
-            var fullName = mType.FullName;
-            var mProps = DC.GH.GetPropertyInfos(mType);
-            var tab = DC.Parameters.FirstOrDefault(it => fullName.Equals(it.ClassFullName, StringComparison.OrdinalIgnoreCase));
+            var mFullName = mType.FullName;
+            var mProps = DC.XC.GetModelProperys(DC.XC.GetModelKey(mFullName)); //DC.GH.GetPropertyInfos(mType);
+            var tab = DC.Parameters.FirstOrDefault(it => mFullName.Equals(it.ClassFullName, StringComparison.OrdinalIgnoreCase));
             var vmProps = DC.GH.GetPropertyInfos(vmType);
             if (tab != null)
             {
                 DC.Option = OptionEnum.Column;
                 DC.Compare = CompareEnum.None;
+                var list = new List<DicParam>();
                 foreach (var prop in mProps)
                 {
                     foreach (var vProp in vmProps)
                     {
                         if (prop.Name.Equals(vProp.Name, StringComparison.OrdinalIgnoreCase))
                         {
-                            DC.DPH.AddParameter(DC.DPH.ColumnDic(prop.Name, tab.TableAliasOne, fullName, prop.Name));
+                            list.Add(DC.DPH.ColumnDic(prop.Name, tab.TableAliasOne, mFullName, prop.Name));
                         }
                     }
                 }
+                DC.DPH.AddParameter(DC.DPH.SelectColumnDic(list));
             }
             else if (DC.Parameters.Count == 0)
             {
@@ -146,37 +157,26 @@ namespace Yunyong.DataExchange.Core.Bases
         protected void SelectMHandle<VM>(Expression<Func<VM>> func)
         {
             DC.Action = ActionEnum.Select;
-            var list = DC.EH.FuncTExpression(func);
-            foreach (var dic in list)
-            {
-                dic.Option = OptionEnum.ColumnAs;
-                DC.DPH.AddParameter(dic);
-            }
+            DC.Option = OptionEnum.ColumnAs;
+            var col = DC.EH.FuncTExpression(func);
+            DC.DPH.AddParameter(col);
         }
         protected void SelectMHandle<M, VM>(Expression<Func<M, VM>> propertyFunc)
             where M : class
         {
             DC.Action = ActionEnum.Select;
-            var list = DC.EH.FuncMFExpression(propertyFunc);
-            foreach (var dic in list)
-            {
-                dic.Option = OptionEnum.ColumnAs;
-                DC.DPH.AddParameter(dic);
-            }
+            DC.Option = OptionEnum.ColumnAs;
+            var col = DC.EH.FuncMFExpression(propertyFunc);
+            DC.DPH.AddParameter(col);
         }
 
         /**********************************************************************************************************/
 
-        protected void CreateMHandle<M>(M m)
+        protected void CreateMHandle<M>(IEnumerable<M> ms)
         {
             DC.Option = OptionEnum.Insert;
-            SetInsertValue(m, 0);
-        }
-        protected void CreateMHandle<M>(IEnumerable<M> mList)
-        {
-            DC.Option = OptionEnum.InsertTVP;
             var i = 0;
-            foreach (var m in mList)
+            foreach (var m in ms)
             {
                 SetInsertValue(m, i);
                 i++;

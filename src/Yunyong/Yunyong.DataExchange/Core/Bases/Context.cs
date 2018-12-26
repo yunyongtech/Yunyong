@@ -36,7 +36,9 @@ namespace Yunyong.DataExchange.Core.Bases
             VH = new CsValueHelper(this);
             GH = new GenericHelper(this);
             EH = new XExpression(this);
-            SC = new XCache(this);
+            CFH = new CsFuncHelper();
+            TSH = new ToStringHelper();
+            XC = new XCache(this);
             PH = new ParameterHelper(this);
             DPH = new DicParamHelper(this);
             BDH = new BatchDataHelper();
@@ -61,16 +63,21 @@ namespace Yunyong.DataExchange.Core.Bases
         /************************************************************************************************************************/
 
         internal XExpression EH { get; private set; }
+
+        internal CsFuncHelper CFH { get; private set; }
+        internal ToStringHelper TSH { get; private set; }
+
         internal CsValueHelper VH { get; private set; }
         internal DicParamHelper DPH { get; private set; }
 
         /************************************************************************************************************************/
 
-        internal CrudTypeEnum Crud { get; set; } = CrudTypeEnum.None;
+        internal CrudEnum Crud { get; set; } = CrudEnum.None;
         internal ActionEnum Action { get; set; } = ActionEnum.None;
         internal OptionEnum Option { get; set; } = OptionEnum.None;
         internal CompareEnum Compare { get; set; } = CompareEnum.None;
         internal FuncEnum Func { get; set; } = FuncEnum.None;
+
         internal UiMethodEnum Method { get; set; } = UiMethodEnum.None;
 
         internal SetEnum Set { get; set; } = SetEnum.AllowedNull;
@@ -90,7 +97,7 @@ namespace Yunyong.DataExchange.Core.Bases
         internal IDbConnection Conn { get; private set; }
         internal IDbTransaction Tran { get; set; }
         internal ISqlProvider SqlProvider { get; set; }
-        internal XCache SC { get; private set; }
+        internal XCache XC { get; private set; }
         internal DataSource DS { get; private set; }
 
         /************************************************************************************************************************/
@@ -123,10 +130,10 @@ namespace Yunyong.DataExchange.Core.Bases
         {
             switch (Crud)
             {
-                case CrudTypeEnum.Query:
-                case CrudTypeEnum.Update:
-                case CrudTypeEnum.Delete:
-                case CrudTypeEnum.Create:
+                case CrudEnum.Query:
+                case CrudEnum.Update:
+                case CrudEnum.Delete:
+                case CrudEnum.Create:
                     return true;
             }
             return false;
@@ -151,7 +158,7 @@ namespace Yunyong.DataExchange.Core.Bases
         {
             //
             var type = typeof(M);
-            var key = SC.GetModelKey(type.FullName);
+            var key = XC.GetModelKey(type.FullName);
             if (NeedSetSingle)
             {
                 SingleOpName = type.FullName;
@@ -159,12 +166,12 @@ namespace Yunyong.DataExchange.Core.Bases
             }
 
             //
-            if (SC.ExistTableName(key)) return;
+            if (XC.ExistTableName(key)) return;
             var table = SqlProvider.GetTableName<M>();
-            SC.SetTableName(key, table);
-            SC.SetModelType(key, type);
-            SC.SetModelProperys(type, this);
-            (SC.SetModelColumnInfos(key, this)).GetAwaiter().GetResult();
+            XC.SetTableName(key, table);
+            XC.SetModelType(key, type);
+            XC.SetModelProperys(type, this);
+            (XC.SetModelColumnInfos(key, this)).GetAwaiter().GetResult();
         }
 
     }

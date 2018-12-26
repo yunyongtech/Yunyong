@@ -95,7 +95,7 @@ namespace Yunyong.DataExchange.Core.Bases
 
             //
             var result = new List<(string key, string param, (object val, string valStr) val, Type valType, string colType, CompareEnum compare)>();
-            var columns = DC.SC.GetColumnInfos(DC.SC.GetModelKey(typeof(M).FullName));
+            var columns = DC.XC.GetColumnInfos(DC.XC.GetModelKey(typeof(M).FullName));
             foreach (var prop in list)
             {
                 var val = default((object val, string valStr));
@@ -199,7 +199,7 @@ namespace Yunyong.DataExchange.Core.Bases
 
             //
             var result = new List<(ColumnParam cp, string param, (object val, string valStr) val, string colType, CompareEnum compare)>();
-            var columns = DC.SC.GetColumnInfos(DC.SC.GetModelKey(mType.FullName));
+            var columns = DC.XC.GetColumnInfos(DC.XC.GetModelKey(mType.FullName));
             foreach (var prop in list)
             {
                 var val = default((object val, string valStr));
@@ -281,7 +281,7 @@ namespace Yunyong.DataExchange.Core.Bases
         internal void SetChangeHandle<M, F>(Expression<Func<M, F>> propertyFunc, F modVal, OptionEnum option)
             where M : class
         {
-            var keyDic = DC.EH.FuncMFExpression(propertyFunc)[0];
+            var keyDic = DC.EH.FuncMFExpression(propertyFunc);
             var key = keyDic.ColumnOne;
             var val = default((object val, string valStr));
             if (modVal == null)
@@ -390,7 +390,7 @@ namespace Yunyong.DataExchange.Core.Bases
         internal void OrderByMF<M, F>(Expression<Func<M, F>> propertyFunc, OrderByEnum orderBy)
             where M : class
         {
-            var keyDic = DC.EH.FuncMFExpression(propertyFunc)[0];
+            var keyDic = DC.EH.FuncMFExpression(propertyFunc);
             switch (orderBy)
             {
                 case OrderByEnum.Asc:
@@ -406,7 +406,7 @@ namespace Yunyong.DataExchange.Core.Bases
 
         internal void OrderByF<F>(Expression<Func<F>> func, OrderByEnum orderBy)
         {
-            var keyDic = DC.EH.FuncTExpression(func)[0];
+            var keyDic = DC.EH.FuncTExpression(func);
             switch (orderBy)
             {
                 case OrderByEnum.Asc:
@@ -448,8 +448,8 @@ namespace Yunyong.DataExchange.Core.Bases
         internal void DistinctHandle()
         {
             DC.Action = ActionEnum.Select;
-            DC.Option = OptionEnum.Distinct;
-            DC.Compare = CompareEnum.None;
+            DC.Option = OptionEnum.ColumnOther;
+            DC.Compare = CompareEnum.Distinct;
             DC.Func = FuncEnum.None;
             DC.DPH.AddParameter(DC.DPH.DistinctDic());
         }

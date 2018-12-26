@@ -1,5 +1,5 @@
+using MyDAL.Core.Common;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -7,6 +7,7 @@ using System.Reflection;
 using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
+using Yunyong.DataExchange.Core.Extensions;
 
 namespace Yunyong.DataExchange.Core
 {
@@ -148,7 +149,7 @@ namespace Yunyong.DataExchange.Core
 
                 //
                 var type = prop.PropertyType;
-                var attr = DC.SC.GetXColumnAttribute(prop, DC.SC.GetAttrKey(XConfig.XColumnFullName, prop.Name, mType.FullName));
+                var attr = DC.XC.GetXColumnAttribute(prop, DC.XC.GetAttrKey(XConfig.XColumnFullName, prop.Name, mType.FullName));
                 var field = string.Empty;
                 if (attr != null)
                 {
@@ -299,18 +300,18 @@ namespace Yunyong.DataExchange.Core
 
             return null;
         }
-        private DicParam CollectionIn(Expression expr, MemberExpression memExpr, string funcStr)
+        private DicParam CollectionIn(ExpressionType nodeType, Expression keyExpr, Expression valExpr, string funcStr)
         {
-            var cp = GetKey(expr, FuncEnum.In);
-            var val = DC.VH.ValueProcess(memExpr, cp.ValType);
-            DC.Option = OptionEnum.Function;
-            DC.Func = FuncEnum.In;
-            DC.Compare = CompareEnum.None;
-            return DC.DPH.InDic(cp, val);
-        }
-        private DicParam NewCollectionIn(ExpressionType nodeType, Expression keyExpr, Expression valExpr, string funcStr)
-        {
-            if (nodeType == ExpressionType.NewArrayInit)
+            if (nodeType == ExpressionType.MemberAccess)
+            {
+                var cp = GetKey(keyExpr, FuncEnum.In);
+                var val = DC.VH.ValueProcess(valExpr, cp.ValType);
+                DC.Option = OptionEnum.Function;
+                DC.Func = FuncEnum.In;
+                DC.Compare = CompareEnum.None;
+                return DC.DPH.InDic(cp, val);
+            }
+            else if (nodeType == ExpressionType.NewArrayInit)
             {
                 var naExpr = valExpr as NewArrayExpression;
                 var cp = GetKey(keyExpr, FuncEnum.In);
@@ -382,8 +383,10 @@ namespace Yunyong.DataExchange.Core
             else
             {
                 var leftStr = binTuple.left.ToString();
-                if (leftStr.Contains(".Length")
-                    && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
+                var length = DC.CFH.IsLengthFunc(leftStr);
+                var tp = length ? new TrimParam { Flag = false } : DC.CFH.IsTrimFunc(leftStr);
+                var toString = tp.Flag ? false : DC.CFH.IsToStringFunc(leftStr);
+                if (length)
                 {
                     var cp = GetKey(binTuple.left, FuncEnum.CharLength);
                     var val = DC.VH.ValueProcess(binTuple.right, cp.ValType);
@@ -392,61 +395,23 @@ namespace Yunyong.DataExchange.Core
                     DC.Compare = GetCompareType(binTuple.node, binTuple.isR);
                     return DC.DPH.CharLengthDic(cp, val);
                 }
-                else if (leftStr.Contains(".Trim(")
-                    && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
+                else if (tp.Flag)
                 {
-                    var cp = GetKey(binTuple.left, FuncEnum.Trim);
+                    var cp = GetKey(binTuple.left, tp.Trim);
                     var val = DC.VH.ValueProcess(binTuple.right, cp.ValType);
                     DC.Option = OptionEnum.Function;
-                    DC.Func = FuncEnum.Trim;
+                    DC.Func = tp.Trim;
                     DC.Compare = GetCompareType(binTuple.node, binTuple.isR);
                     return DC.DPH.TrimDic(cp, val);
                 }
-                else if (leftStr.Contains(".TrimStart(")
-                    && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
-                {
-                    var cp = GetKey(binTuple.left, FuncEnum.LTrim);
-                    var val = DC.VH.ValueProcess(binTuple.right, cp.ValType);
-                    DC.Option = OptionEnum.Function;
-                    DC.Func = FuncEnum.LTrim;
-                    DC.Compare = GetCompareType(binTuple.node, binTuple.isR);
-                    return DC.DPH.LTrimDic(cp, val);
-                }
-                else if (leftStr.Contains(".TrimEnd(")
-                    && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
-                {
-                    var cp = GetKey(binTuple.left, FuncEnum.RTrim);
-                    var val = DC.VH.ValueProcess(binTuple.right, cp.ValType);
-                    DC.Option = OptionEnum.Function;
-                    DC.Func = FuncEnum.RTrim;
-                    DC.Compare = GetCompareType(binTuple.node, binTuple.isR);
-                    return DC.DPH.RTrimDic(cp, val);
-                }
-                else if (leftStr.Contains(".ToString(")
-                    && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
+                else if (toString)
                 {
                     var cp = GetKey(binTuple.left, FuncEnum.DateFormat);
                     var val = DC.VH.ValueProcess(binTuple.right, cp.ValType, cp.Format);
                     DC.Option = OptionEnum.Function;
                     DC.Func = FuncEnum.DateFormat;
                     DC.Compare = GetCompareType(binTuple.node, binTuple.isR);
-                    var format = string.Empty;
-                    if ("yyyy-MM-dd".Equals(cp.Format.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        format = "%Y-%m-%d";
-                    }
-                    else if ("yyyy-MM".Equals(cp.Format.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        format = "%Y-%m";
-                    }
-                    else if ("yyyy".Equals(cp.Format.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        format = "%Y";
-                    }
-                    else
-                    {
-                        throw new Exception($"{XConfig.EC._004} -- [[{funcStr}]] 未能解析!!!");
-                    }
+                    var format = DC.TSH.DateTime(cp.Format);
                     return DC.DPH.DateFormatDic(cp, val, format);
                 }
                 else
@@ -462,61 +427,39 @@ namespace Yunyong.DataExchange.Core
         }
         private DicParam HandConditionCall(MethodCallExpression mcExpr, string funcStr)
         {
-            var exprStr = mcExpr.ToString();
-            if (exprStr.Contains(".Contains("))
+            var clp = DC.CFH.IsContainsLikeFunc(mcExpr);
+            var cip = clp.Flag ? new ContainsInParam { Flag = false } : DC.CFH.IsContainsInFunc(mcExpr);
+            if (clp.Flag)
             {
-                if (mcExpr.Object == null)
+                if (clp.Like == StringLikeEnum.Contains
+                    || clp.Like == StringLikeEnum.StartsWith
+                    || clp.Like == StringLikeEnum.EndsWith)
                 {
-                    var memKey = mcExpr.Arguments[1];
-                    var memVal = mcExpr.Arguments[0];
-                    if (memVal.NodeType == ExpressionType.MemberAccess)
-                    {
-                        return CollectionIn(memKey, memVal as MemberExpression, funcStr);
-                    }
-                    else if (memVal.NodeType == ExpressionType.NewArrayInit)
-                    {
-                        return NewCollectionIn(memVal.NodeType, memKey, memVal, funcStr);
-                    }
+                    return StringLike(mcExpr, clp.Like, funcStr);
                 }
                 else
                 {
-                    var objExpr = mcExpr.Object;
-                    var objNodeType = mcExpr.Object.NodeType;
-                    if (objNodeType == ExpressionType.MemberAccess)
-                    {
-                        var memO = objExpr as MemberExpression;
-                        var memType = objExpr.Type;
-                        if (memType.GetInterfaces() != null
-                            && memType.GetInterfaces().Contains(typeof(IList))
-                            && !memType.IsArray)
-                        {
-                            return CollectionIn(mcExpr, memO, funcStr);
-                        }
-                        else if (memType == typeof(string))
-                        {
-                            return StringLike(mcExpr, StringLikeEnum.Contains, funcStr);
-                        }
-                    }
-                    else if (objNodeType == ExpressionType.ListInit)
-                    {
-                        return NewCollectionIn(objNodeType, mcExpr, objExpr, funcStr);
-                    }
-                    else if (objNodeType == ExpressionType.MemberInit)
-                    {
-                        return NewCollectionIn(objNodeType, mcExpr, objExpr, funcStr);
-                    }
+                    throw new Exception($"出现异常 -- [[{mcExpr.ToString()}]] 不能解析!!!");
                 }
             }
-            else if (exprStr.Contains(".StartsWith("))
+            else if (cip.Flag)
             {
-                return StringLike(mcExpr, StringLikeEnum.StartsWith, funcStr);
+                if (cip.Type == ExpressionType.MemberAccess
+                    || cip.Type == ExpressionType.NewArrayInit
+                    || cip.Type == ExpressionType.ListInit
+                    || cip.Type == ExpressionType.MemberInit)
+                {
+                    return CollectionIn(cip.Type, cip.Key, cip.Val, funcStr);
+                }
+                else
+                {
+                    throw new Exception($"出现异常 -- [[{mcExpr.ToString()}]] 不能解析!!!");
+                }
             }
-            else if (exprStr.Contains(".EndsWith("))
+            else
             {
-                return StringLike(mcExpr, StringLikeEnum.EndsWith, funcStr);
+                throw new Exception($"出现异常 -- [[{mcExpr.ToString()}]] 不能解析!!!");
             }
-
-            return null;
         }
         private DicParam HandConditionConstant(ConstantExpression cExpr, Type valType)
         {
@@ -532,7 +475,7 @@ namespace Yunyong.DataExchange.Core
         }
         private DicParam HandConditionMemberAccess(MemberExpression memExpr)
         {
-            var cp = GetMemTuple(memExpr);
+            var cp = GetKey(memExpr, FuncEnum.None); //GetMemTuple(memExpr);
             if (cp.ValType == typeof(bool))
             {
                 DC.Option = OptionEnum.Compare;
@@ -541,10 +484,6 @@ namespace Yunyong.DataExchange.Core
             }
 
             return null;
-        }
-        private ColumnParam GetMemTuple(MemberExpression memExpr)
-        {
-            return GetKey(memExpr, FuncEnum.None);
         }
 
         /********************************************************************************************************************/
@@ -556,11 +495,18 @@ namespace Yunyong.DataExchange.Core
             foreach (var mb in miExpr.Bindings)
             {
                 var mbEx = mb as MemberAssignment;
-                var maMem = mbEx.Expression as MemberExpression;
-                var cp = GetMemTuple(maMem);
+                //var maMem = mbEx.Expression as MemberExpression;
+                var expStr = mbEx.Expression.ToString();
+                var cp = default(ColumnParam);
+                if (DC.CFH.IsToStringFunc(expStr))
+                {
+                    //cp=
+                }
+                else
+                {
+                    cp = GetKey(mbEx.Expression, FuncEnum.None);
+                }
                 var colAlias = mbEx.Member.Name;
-                DC.Option = OptionEnum.None;
-                DC.Compare = CompareEnum.None;
                 result.Add(DC.DPH.SelectMemberInitDic(cp, colAlias));
             }
 
@@ -579,7 +525,7 @@ namespace Yunyong.DataExchange.Core
         }
 
         /********************************************************************************************************************/
-        
+
         private DicParam BodyProcess(Expression body, ParameterExpression firstParam, string funcStr)
         {
             //
@@ -614,7 +560,7 @@ namespace Yunyong.DataExchange.Core
                     };
                     result = HandConditionBinary(binExpr, pres, funcStr);
                 }
-                else if (DC.Crud == CrudTypeEnum.Join)
+                else if (DC.Crud == CrudEnum.Join)
                 {
                     var binExpr = body as BinaryExpression;
                     if (DC.Action == ActionEnum.On)
@@ -647,79 +593,94 @@ namespace Yunyong.DataExchange.Core
             //
             return result;
         }
-        private List<DicParam> BodyProcess2(Expression body)
+        private DicParam BodyProcess2(Expression body)
         {
-            var result = new List<DicParam>();
             var nodeType = body.NodeType;
             if (nodeType == ExpressionType.MemberAccess)
             {
                 var memExpr = body as MemberExpression;
                 if (DC.IsSingleTableOption()
-                    || DC.Crud == CrudTypeEnum.None)
+                    || DC.Crud == CrudEnum.None)
                 {
                     var cp = GetKey(memExpr, FuncEnum.None);
                     if (string.IsNullOrWhiteSpace(cp.Key))
                     {
                         throw new Exception("无法解析 列名 !!!");
                     }
-                    result.Add(DC.DPH.ColumnDic(cp));
+                    if (DC.Action == ActionEnum.Select)
+                    {
+                        return DC.DPH.SelectColumnDic(new List<DicParam> { DC.DPH.ColumnDic(cp) });
+                    }
+                    else
+                    {
+                        return DC.DPH.ColumnDic(cp);
+                    }
                 }
-                else if (DC.Crud == CrudTypeEnum.Join)
+                else if (DC.Crud == CrudEnum.Join)
                 {
                     if (memExpr.Expression.NodeType == ExpressionType.Constant)
                     {
                         var alias = memExpr.Member.Name;
-                        result.Add(DC.DPH.TableDic(memExpr.Type.FullName, alias));
+                        return DC.DPH.TableDic(memExpr.Type.FullName, alias);
                     }
                     else if (memExpr.Expression.NodeType == ExpressionType.MemberAccess)
                     {
                         var leftStr = memExpr.ToString();
-                        if (leftStr.Contains(".Length")
-                            && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
+                        if (DC.CFH.IsLengthFunc(leftStr))
                         {
                             var cp = GetKey(memExpr, FuncEnum.CharLength);
                             DC.Func = FuncEnum.CharLength;
                             DC.Compare = CompareEnum.None;
-                            result.Add(DC.DPH.CharLengthDic(cp, (null, string.Empty)));
+                            return DC.DPH.CharLengthDic(cp, (null, string.Empty));
                         }
                         else
                         {
                             var exp2 = memExpr.Expression as MemberExpression;
                             var alias = exp2.Member.Name;
                             var field = memExpr.Member.Name;
-                            result.Add(DC.DPH.JoinColumnDic(exp2.Type.FullName, field, alias, field));
+                            DC.Option = OptionEnum.Column;
+                            if (DC.Action == ActionEnum.Select)
+                            {
+                                return DC.DPH.SelectColumnDic(new List<DicParam> { DC.DPH.JoinColumnDic(exp2.Type.FullName, field, alias, field) });
+                            }
+                            else
+                            {
+                                return DC.DPH.JoinColumnDic(exp2.Type.FullName, field, alias, field);
+                            }
                         }
                     }
+                    else
+                    {
+                        throw new Exception($"{XConfig.EC._021} -- [[{memExpr.Expression.NodeType} - {body.ToString()}]] 不能解析!!!");
+                    }
+                }
+                else
+                {
+                    throw new Exception($"未知的操作 -- [[{DC.Crud}]] !!!");
                 }
             }
             else if (nodeType == ExpressionType.Call)
             {
                 var leftStr = body.ToString();
-                if (leftStr.Contains(".ToString(")
-                    && leftStr.IndexOf(".") < leftStr.LastIndexOf("."))
+                if (DC.CFH.IsToStringFunc(leftStr))
                 {
                     var cp = GetKey(body, FuncEnum.DateFormat);
                     DC.Option = OptionEnum.ColumnAs;
                     DC.Func = FuncEnum.DateFormat;
                     DC.Compare = CompareEnum.None;
-                    var format = string.Empty;
-                    if ("yyyy-MM-dd".Equals(cp.Format.Trim(), StringComparison.OrdinalIgnoreCase))
+                    var format = DC.TSH.DateTime(cp.Format);
+                    if (DC.Action == ActionEnum.Select)
                     {
-                        format = "%Y-%m-%d";
-                    }
-                    else if ("yyyy-MM".Equals(cp.Format.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        format = "%Y-%m";
-                    }
-                    else if ("yyyy".Equals(cp.Format.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        format = "%Y";
+                        return DC.DPH.SelectColumnDic(new List<DicParam> { DC.DPH.DateFormatDic(cp, (null, string.Empty), format) });
                     }
                     else
                     {
-                        throw new Exception($"{XConfig.EC._001} -- [[{body}]] 未能解析!!!");
+                        return DC.DPH.DateFormatDic(cp, (null, string.Empty), format);
                     }
-                    result.Add(DC.DPH.DateFormatDic(cp, (null, string.Empty), format));
+                }
+                else
+                {
+                    throw new Exception($"{XConfig.EC._004} -- [[{body.ToString()}]] 不能解析!!!");
                 }
             }
             else if (nodeType == ExpressionType.Convert)
@@ -729,43 +690,43 @@ namespace Yunyong.DataExchange.Core
                 {
                     throw new Exception("无法解析 列名2 !!!");
                 }
-                result.Add(DC.DPH.ColumnDic(cp));
+                return DC.DPH.ColumnDic(cp);
             }
             else if (nodeType == ExpressionType.MemberInit)
             {
                 var miExpr = body as MemberInitExpression;
-                result = HandSelectMemberInit(miExpr);
+                return DC.DPH.SelectColumnDic(HandSelectMemberInit(miExpr));
             }
             else if (nodeType == ExpressionType.New)
             {
+                var list = new List<DicParam>();
                 var nExpr = body as NewExpression;
                 var args = nExpr.Arguments;
                 var mems = nExpr.Members;
                 for (var i = 0; i < args.Count; i++)
                 {
-                    var cp = GetMemTuple(args[i] as MemberExpression);
+                    var cp = GetKey(args[i], FuncEnum.None);
                     var colAlias = mems[i].Name;
                     DC.Option = OptionEnum.None;
                     DC.Compare = CompareEnum.None;
-                    result.Add(DC.DPH.SelectMemberInitDic(cp, colAlias));
+                    list.Add(DC.DPH.SelectMemberInitDic(cp, colAlias));
                 }
-
+                return DC.DPH.SelectColumnDic(list);
             }
             else
             {
                 throw new Exception($"{XConfig.EC._002} -- [[{body.ToString()}]] 不能解析!!!");
             }
-            return result;
         }
 
         /********************************************************************************************************************/
 
-        internal List<DicParam> FuncMFExpression<M, F>(Expression<Func<M, F>> propertyFunc)
+        internal DicParam FuncMFExpression<M, F>(Expression<Func<M, F>> propertyFunc)
             where M : class
         {
             return BodyProcess2(propertyFunc.Body);
         }
-        internal List<DicParam> FuncTExpression<T>(Expression<Func<T>> mOrPropFunc)
+        internal DicParam FuncTExpression<T>(Expression<Func<T>> mOrPropFunc)
         {
             return BodyProcess2(mOrPropFunc.Body);
         }

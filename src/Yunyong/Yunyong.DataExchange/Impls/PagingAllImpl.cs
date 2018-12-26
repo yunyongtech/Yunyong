@@ -9,29 +9,31 @@ using Yunyong.DataExchange.Interfaces;
 
 namespace Yunyong.DataExchange.Impls
 {
-    internal class AllPagingListImpl<M>
-        : Impler, IAllPagingList<M>
+    internal class PagingAllImpl<M>
+        : Impler, IPagingAll<M>
         where M : class
     {
-        internal AllPagingListImpl(Context dc)
+        internal PagingAllImpl(Context dc)
             : base(dc)
         {
         }
 
-        public async Task<PagingList<M>> PagingAllListAsync(int pageIndex, int pageSize)
+        public async Task<PagingList<M>> PagingAllAsync(int pageIndex, int pageSize)
         {
-            return await PagingListAsyncHandle<M>(pageIndex, pageSize, UiMethodEnum.PagingAllListAsync);
+            DC.PageIndex = pageIndex;
+            DC.PageSize = pageSize;
+            return await PagingListAsyncHandle<M>(UiMethodEnum.PagingAllAsync, false);
         }
 
-        public async Task<PagingList<VM>> PagingAllListAsync<VM>(int pageIndex, int pageSize)
+        public async Task<PagingList<VM>> PagingAllAsync<VM>(int pageIndex, int pageSize)
             where VM : class
         {
             DC.PageIndex = pageIndex;
             DC.PageSize = pageSize;
-            return await PagingListAsyncHandle<M, VM>(UiMethodEnum.PagingAllListAsync, false, null);
+            return await PagingListAsyncHandle<M, VM>(UiMethodEnum.PagingAllAsync, false, null);
         }
 
-        public async Task<PagingList<T>> PagingAllListAsync<T>(int pageIndex, int pageSize, Expression<Func<M, T>> columnMapFunc)
+        public async Task<PagingList<T>> PagingAllAsync<T>(int pageIndex, int pageSize, Expression<Func<M, T>> columnMapFunc)
         {
             DC.PageIndex = pageIndex;
             DC.PageSize = pageSize;
@@ -44,7 +46,7 @@ namespace Yunyong.DataExchange.Impls
             {
                 SelectMHandle(columnMapFunc);
             }
-            return await PagingListAsyncHandle<M, T>(UiMethodEnum.PagingAllListAsync, single, columnMapFunc.Compile());
+            return await PagingListAsyncHandle<M, T>(UiMethodEnum.PagingAllAsync, single, columnMapFunc.Compile());
         }
     }
 }

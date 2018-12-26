@@ -15,11 +15,6 @@ namespace Yunyong.DataExchange.Core.Enums
         Insert,
 
         /// <summary>
-        /// ""
-        /// </summary>
-        InsertTVP,
-
-        /// <summary>
         /// =
         /// </summary>
         Set,
@@ -39,26 +34,17 @@ namespace Yunyong.DataExchange.Core.Enums
         /// </summary>
         Column,
         ColumnAs,
+        ColumnOther,
 
         /// <summary>
         /// " like "
         /// </summary>
         Like,
-
-        /// <summary>
-        /// " count"
-        /// </summary>
-        Count,
-
-        /// <summary>
-        /// " sum"
-        /// </summary>
-        Sum,
         
-        /// <summary>
-        /// " distinct "
-        /// </summary>
-        Distinct,
+        ///// <summary>
+        ///// " distinct "
+        ///// </summary>
+        //Distinct,
 
         /// <summary>
         /// ""
