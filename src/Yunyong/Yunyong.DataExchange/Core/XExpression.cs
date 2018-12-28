@@ -1,4 +1,3 @@
-using MyDAL.Core.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,6 @@ using System.Reflection;
 using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
-using Yunyong.DataExchange.Core.Extensions;
 
 namespace Yunyong.DataExchange.Core
 {
