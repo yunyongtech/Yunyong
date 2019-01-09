@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Yunyong.Core;
 using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Core.Bases;
 using Yunyong.DataExchange.Core.Common;

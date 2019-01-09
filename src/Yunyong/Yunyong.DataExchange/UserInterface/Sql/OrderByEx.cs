@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using Yunyong.Core;
 using Yunyong.DataExchange.Core.Enums;
 using Yunyong.DataExchange.UserFacade.Join;
 using Yunyong.DataExchange.UserFacade.Query;
@@ -19,6 +21,36 @@ namespace Yunyong.DataExchange
             return new OrderByQ<M>(where.DC);
         }
 
+        public static OrderByQ<M> OrderBy<M>(this WhereQ<M> where, IEnumerable<OrderBy> orderBys)
+            where M : class
+        {
+            where.DC.Action = ActionEnum.OrderBy;
+            where.OrderByM<M>(orderBys);
+            return new OrderByQ<M>(where.DC);
+        }
+        public static OrderByQ<M> OrderBy<M>(this WhereQ<M> where, IEnumerable<string> orderBys)
+            where M : class
+        {
+            where.DC.Action = ActionEnum.OrderBy;
+            where.OrderByM<M>(orderBys);
+            return new OrderByQ<M>(where.DC);
+        }
+
+        public static OrderByQ<M> OrderBy<M>(this Queryer<M> queryer, IEnumerable<OrderBy> orderBys)
+            where M : class, new()
+        {
+            queryer.DC.Action = ActionEnum.OrderBy;
+            queryer.OrderByM<M>(orderBys);
+            return new OrderByQ<M>(queryer.DC);
+        }
+        public static OrderByQ<M> OrderBy<M>(this Queryer<M> queryer, IEnumerable<string> orderBys)
+            where M : class, new()
+        {
+            queryer.DC.Action = ActionEnum.OrderBy;
+            queryer.OrderByM<M>(orderBys);
+            return new OrderByQ<M>(queryer.DC);
+        }
+
         public static ThenOrderByQ<M> ThenOrderBy<M, F>(this OrderByQ<M> orderByQ, Expression<Func<M, F>> propertyFunc, OrderByEnum orderBy = OrderByEnum.Desc)
             where M : class
         {
@@ -29,7 +61,7 @@ namespace Yunyong.DataExchange
 
         /**************************************************************************************************************/
 
-        public static OrderByX OrderBy<F>(this OnX onX,Expression<Func<F>> propertyFunc,OrderByEnum orderBy= OrderByEnum.Desc)
+        public static OrderByX OrderBy<F>(this OnX onX, Expression<Func<F>> propertyFunc, OrderByEnum orderBy = OrderByEnum.Desc)
         {
             onX.DC.Action = ActionEnum.OrderBy;
             onX.OrderByF(propertyFunc, orderBy);
@@ -43,7 +75,7 @@ namespace Yunyong.DataExchange
             return new OrderByX(whereX.DC);
         }
 
-        public static ThenOrderByX ThenOrderBy<F>(this OrderByX orderByX,Expression<Func<F>> propertyFunc,OrderByEnum orderBy = OrderByEnum.Desc)
+        public static ThenOrderByX ThenOrderBy<F>(this OrderByX orderByX, Expression<Func<F>> propertyFunc, OrderByEnum orderBy = OrderByEnum.Desc)
         {
             orderByX.DC.Action = ActionEnum.OrderBy;
             orderByX.OrderByF(propertyFunc, orderBy);

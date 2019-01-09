@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Yunyong.DataExchange
+namespace Yunyong.Core.Attributes
 {
     [AttributeUsage(AttributeTargets.Property,AllowMultiple =false,Inherited =false)]
     public sealed class QueryColumnAttribute : Attribute

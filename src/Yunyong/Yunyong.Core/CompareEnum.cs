@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Yunyong.DataExchange
+﻿namespace Yunyong.Core
 {
     public enum CompareEnum
     {

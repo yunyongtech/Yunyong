@@ -33,7 +33,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3D7D73E4
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Configuration.Tests", "Tests\Yunyong.Configuration.Tests\Yunyong.Configuration.Tests.csproj", "{6385EFBC-F53F-4206-9043-8757E7C7F4E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.Redis", "Yunyong.Redis\Yunyong.Redis.csproj", "{A8E44DE1-8F5B-43B0-9667-99D7C774483C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yunyong.Redis", "Yunyong.Redis\Yunyong.Redis.csproj", "{A8E44DE1-8F5B-43B0-9667-99D7C774483C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yunyong.DataExchange.Tests", "Yunyong.DataExchange.Tests\Yunyong.DataExchange.Tests.csproj", "{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -201,6 +203,18 @@ Global
 		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|x64.Build.0 = Release|Any CPU
 		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|x86.ActiveCfg = Release|Any CPU
 		{A8E44DE1-8F5B-43B0-9667-99D7C774483C}.Release|x86.Build.0 = Release|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Debug|x64.Build.0 = Debug|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Debug|x86.Build.0 = Debug|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Release|x64.ActiveCfg = Release|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Release|x64.Build.0 = Release|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Release|x86.ActiveCfg = Release|Any CPU
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -212,6 +226,7 @@ Global
 		{B6635B0C-2291-448B-B5AE-ED668DA2DF3B} = {F1950E21-2761-474F-8E07-BB21D24B65A0}
 		{4DF6A113-E67A-457C-9FCA-6AC8CDBFE365} = {F1950E21-2761-474F-8E07-BB21D24B65A0}
 		{6385EFBC-F53F-4206-9043-8757E7C7F4E3} = {3D7D73E4-5F5B-4264-A4FF-5004EFF39F2A}
+		{95E51A6F-1BAB-4CDE-9BFE-C864CAEF27A8} = {3D7D73E4-5F5B-4264-A4FF-5004EFF39F2A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AA23ED5D-7F65-49F9-96C4-68F8B396993E}

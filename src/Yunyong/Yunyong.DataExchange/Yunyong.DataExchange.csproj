@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.3.0</Version>
+    <Version>1.3.1</Version>
     <Authors>Meng.NET</Authors>
     <Company>yunyong_tech</Company>
     <Product>MyDAL</Product>
@@ -9,7 +9,7 @@
         -- 友好, 轻量, 极致性能, 无任何第三方依赖, 持续演进~~</Description>
     <Copyright>2018 Meng.NET</Copyright>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
-    <PackageProjectUrl></PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/yunyongtech/Yunyong</PackageProjectUrl>
     <RepositoryUrl>https://github.com/yunyongtech/Yunyong</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Yunyong.DataExchange</PackageTags>

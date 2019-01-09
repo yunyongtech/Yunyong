@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Internal;
 using Yunyong.Core;
 using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Core;
@@ -197,52 +198,78 @@ namespace Yunyong.DataExchange
         /// <summary>
         /// 请参阅: <see langword=".FirstOrDefaultAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static async Task<M> FirstOrDefaultAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
+        public static async Task<M> FirstOrDefaultAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
         {
-            return await conn.Queryer<M>().Where(compareFunc).FirstOrDefaultAsync();
+            if (orderBys != null && orderBys.Any())
+            {
+                return await conn.Queryer<M>().Where(compareFunc).OrderBy(orderBys).FirstOrDefaultAsync();
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().Where(compareFunc).FirstOrDefaultAsync();
+            }
         }
         /// <summary>
         /// 请参阅: <see langword=".FirstOrDefaultAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static async Task<VM> FirstOrDefaultAsync<M, VM>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
+        public static async Task<VM> FirstOrDefaultAsync<M, VM>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
             where VM : class
         {
-            return await conn.Queryer<M>().Where(compareFunc).FirstOrDefaultAsync<VM>();
+            if (orderBys != null && orderBys.Any())
+            {
+                return await conn.Queryer<M>().Where(compareFunc).OrderBy(orderBys).FirstOrDefaultAsync<VM>();
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().Where(compareFunc).FirstOrDefaultAsync<VM>();
+            }
+            //return await conn.Queryer<M>().Where(compareFunc).OrderBy(orderBys).TopAsync<VM>(1);
         }
         /// <summary>
         /// 请参阅: <see langword=".FirstOrDefaultAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static async Task<T> FirstOrDefaultAsync<M, T>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, Expression<Func<M, T>> columnMapFunc)
+        public static async Task<T> FirstOrDefaultAsync<M, T>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, Expression<Func<M, T>> columnMapFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
         {
-            return await conn.Queryer<M>().Where(compareFunc).FirstOrDefaultAsync(columnMapFunc);
+            if (orderBys != null && orderBys.Any())
+            {
+                return await conn.Queryer<M>().Where(compareFunc).OrderBy(orderBys).FirstOrDefaultAsync(columnMapFunc);
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().Where(compareFunc).FirstOrDefaultAsync(columnMapFunc);
+            }
+        }
+
+        /// <summary>
+        /// Queryer 便捷-同步 FirstOrDefaultAsync 方法
+        /// </summary>
+        public static M FirstOrDefault<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, IEnumerable<OrderBy> orderBys = null)
+            where M : class, new()
+        {
+            return (conn.FirstOrDefaultAsync(compareFunc, orderBys)).GetAwaiter().GetResult();
         }
         /// <summary>
         /// Queryer 便捷-同步 FirstOrDefaultAsync 方法
         /// </summary>
-        public static M FirstOrDefault<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
-            where M : class, new()
-        {
-            return (conn.FirstOrDefaultAsync(compareFunc)).GetAwaiter().GetResult();
-        }
-        /// <summary>
-        /// Queryer 便捷-同步 FirstOrDefaultAsync 方法
-        /// </summary>
-        public static VM FirstOrDefault<M, VM>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
+        public static VM FirstOrDefault<M, VM>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
             where VM : class
         {
-            return (conn.FirstOrDefaultAsync<M, VM>(compareFunc)).GetAwaiter().GetResult();
+            return (conn.FirstOrDefaultAsync<M, VM>(compareFunc, orderBys)).GetAwaiter().GetResult();
         }
         /// <summary>
         /// Queryer 便捷-同步 FirstOrDefaultAsync 方法
         /// </summary>
-        public static T FirstOrDefault<M, T>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, Expression<Func<M, T>> columnMapFunc)
+        public static T FirstOrDefault<M, T>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, Expression<Func<M, T>> columnMapFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
         {
-            return (conn.FirstOrDefaultAsync(compareFunc, columnMapFunc)).GetAwaiter().GetResult();
+            return (conn.FirstOrDefaultAsync(compareFunc, columnMapFunc, orderBys)).GetAwaiter().GetResult();
         }
 
 
@@ -252,7 +279,7 @@ namespace Yunyong.DataExchange
         public static async Task<List<M>> ListAsync<M>(this IDbConnection conn, QueryOption option)
             where M : class, new()
         {
-            return await conn.Queryer<M>().Where(option).ListAsync();
+            return await conn.Queryer<M>().Where(option).OrderBy(option.OrderBys).ListAsync();
         }
         /// <summary>
         /// Queryer 便捷 ListAsync 方法
@@ -261,42 +288,42 @@ namespace Yunyong.DataExchange
             where M : class, new()
             where VM : class
         {
-            return await conn.Queryer<M>().Where(option).ListAsync<VM>();
+            return await conn.Queryer<M>().Where(option).OrderBy(option.OrderBys).ListAsync<VM>();
         }
         /// <summary>
         /// Queryer 便捷 ListAsync 方法
         /// </summary>
-        public static async Task<List<VM>> ListAsync<M, VM>(this IDbConnection conn, QueryOption option, Expression<Func<M, VM>> columnMapFunc)
+        public static async Task<List<VM>> ListAsync<M, VM>(this IDbConnection conn, QueryOption option, Expression<Func<M, VM>> columnMapFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
             where VM : class
         {
-            return await conn.Queryer<M>().Where(option).ListAsync<VM>(columnMapFunc);
+            return await conn.Queryer<M>().Where(option).OrderBy(orderBys).ListAsync<VM>(columnMapFunc);
         }
 
         /// <summary>
         /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static async Task<List<M>> ListAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
+        public static async Task<List<M>> ListAsync<M>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
         {
-            return await conn.Queryer<M>().Where(compareFunc).ListAsync();
+            return await conn.Queryer<M>().Where(compareFunc).OrderBy(orderBys).ListAsync();
         }
         /// <summary>
         /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static async Task<List<VM>> ListAsync<M, VM>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc)
+        public static async Task<List<VM>> ListAsync<M, VM>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
             where VM : class
         {
-            return await conn.Queryer<M>().Where(compareFunc).ListAsync<VM>();
+            return await conn.Queryer<M>().Where(compareFunc).OrderBy(orderBys).ListAsync<VM>();
         }
         /// <summary>
         /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
-        public static async Task<List<T>> ListAsync<M, T>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, Expression<Func<M, T>> columnMapFunc)
+        public static async Task<List<T>> ListAsync<M, T>(this IDbConnection conn, Expression<Func<M, bool>> compareFunc, Expression<Func<M, T>> columnMapFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
         {
-            return await conn.Queryer<M>().Where(compareFunc).ListAsync(columnMapFunc);
+            return await conn.Queryer<M>().Where(compareFunc).OrderBy(orderBys).ListAsync(columnMapFunc);
         }
 
         /// <summary>
@@ -329,27 +356,51 @@ namespace Yunyong.DataExchange
         /// <summary>
         /// Queryer 便捷 AllAsync 方法
         /// </summary>
-        public static async Task<List<M>> AllAsync<M>(this IDbConnection conn)
+        public static async Task<List<M>> AllAsync<M>(this IDbConnection conn, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
         {
-            return await conn.Queryer<M>().AllAsync();
+            if (orderBys != null && orderBys.Any())
+            {
+                return await conn.Queryer<M>().OrderBy(orderBys).ListAsync();
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().AllAsync();
+            }
         }
         /// <summary>
         /// Queryer 便捷 AllAsync 方法
         /// </summary>
-        public static async Task<List<VM>> AllAsync<M, VM>(this IDbConnection conn)
+        public static async Task<List<VM>> AllAsync<M, VM>(this IDbConnection conn, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
             where VM : class
         {
-            return await conn.Queryer<M>().AllAsync<VM>();
+            if (orderBys != null && orderBys.Any())
+            {
+                return await conn.Queryer<M>().OrderBy(orderBys).ListAsync<VM>();
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().AllAsync<VM>();
+            }
         }
         /// <summary>
         /// Queryer 便捷 AllAsync 方法
         /// </summary>
-        public static async Task<List<T>> AllAsync<M, T>(this IDbConnection conn, Expression<Func<M, T>> propertyFunc)
+        public static async Task<List<T>> AllAsync<M, T>(this IDbConnection conn, Expression<Func<M, T>> propertyFunc, IEnumerable<OrderBy> orderBys = null)
             where M : class, new()
         {
-            return await conn.Queryer<M>().AllAsync(propertyFunc);
+            if (orderBys != null && orderBys.Any())
+            {
+                return await conn.Queryer<M>().OrderBy(orderBys).ListAsync(propertyFunc);
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().AllAsync(propertyFunc);
+            }
         }
 
         /// <summary>

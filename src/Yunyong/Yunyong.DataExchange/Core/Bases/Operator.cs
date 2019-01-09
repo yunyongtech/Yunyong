@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Yunyong.Core;
+using Yunyong.Core.Attributes;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
 using Yunyong.DataExchange.Core.Extensions;
@@ -402,6 +405,27 @@ namespace Yunyong.DataExchange.Core.Bases
             }
 
             DC.DPH.AddParameter(DC.DPH.OrderbyDic(keyDic.ClassFullName, keyDic.ColumnOne, keyDic.TableAliasOne));
+        }
+
+        internal void OrderByM<M>(IEnumerable<OrderBy> orderBys)
+        where M : class
+        {
+            var tableAlias = typeof(M).GetCustomAttribute<TableAttribute>().Name;
+            foreach (var orderBy in orderBys)
+            {
+                DC.Option = orderBy.Desc ? OptionEnum.Desc : OptionEnum.Asc;
+                DC.DPH.AddParameter(DC.DPH.OrderbyDic(typeof(M).FullName, orderBy.Field, tableAlias));
+            }
+        }
+        internal void OrderByM<M>(IEnumerable<string> orderBys)
+            where M : class
+        {
+            var tableAlias = typeof(M).GetCustomAttribute<TableAttribute>().Name;
+            foreach (var orderBy in orderBys)
+            {
+                DC.Option = OptionEnum.Asc;
+                DC.DPH.AddParameter(DC.DPH.OrderbyDic(typeof(M).FullName, orderBy, tableAlias));
+            }
         }
 
         internal void OrderByF<F>(Expression<Func<F>> func, OrderByEnum orderBy)

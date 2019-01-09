@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Yunyong.Core;
 using Yunyong.DataExchange.Core.Enums;
 
 namespace Yunyong.DataExchange.Core

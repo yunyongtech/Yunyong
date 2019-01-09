@@ -10,7 +10,7 @@ using Yunyong.DataExchange.Interfaces;
 namespace Yunyong.DataExchange.UserFacade.Query
 {
     public sealed class OrderByQ<M>
-        : Operator, Interfaces.IList<M>, IPagingList<M>, IPagingListO<M>,ITop<M>
+        : Operator, Interfaces.IList<M>, IPagingList<M>, IPagingListO<M>, ITop<M>, IFirstOrDefault<M>
             where M : class
     {
         internal OrderByQ(Context dc)
@@ -29,7 +29,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// 请参阅: <see langword=".ListAsync() 使用 " cref="https://www.cnblogs.com/Meng-NET/"/>
         /// </summary>
         public async Task<List<VM>> ListAsync<VM>()
-            where VM:class
+            where VM : class
         {
             return await new ListImpl<M>(DC).ListAsync<VM>();
         }
@@ -79,7 +79,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <param name="pageIndex">页码</param>
         /// <param name="pageSize">每页条数</param>
         public async Task<PagingList<VM>> PagingListAsync<VM>(int pageIndex, int pageSize)
-            where VM:class
+            where VM : class
         {
             return await new PagingListImpl<M>(DC).PagingListAsync<VM>(pageIndex, pageSize);
         }
@@ -102,7 +102,7 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// 单表分页查询
         /// </summary>
         public async Task<PagingList<VM>> PagingListAsync<VM>(PagingQueryOption option)
-            where VM:class
+            where VM : class
         {
             return await new PagingListOImpl<M>(DC).PagingListAsync<VM>(option);
         }
@@ -136,11 +136,33 @@ namespace Yunyong.DataExchange.UserFacade.Query
         /// <summary>
         /// 单表数据查询
         /// </summary>
-        /// <param name="count">top count</param>
-        /// <returns>返回 top count 条数据</returns>
         public async Task<List<T>> TopAsync<T>(int count, Expression<Func<M, T>> columnMapFunc)
         {
             return await new TopImpl<M>(DC).TopAsync<T>(count, columnMapFunc);
+        }
+        /// <summary>
+        /// Firsts the or default asynchronous.
+        /// </summary>
+        public async Task<M> FirstOrDefaultAsync()
+        {
+            return await new FirstOrDefaultImpl<M>(DC).FirstOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// 单表数据查询
+        /// </summary>
+        public async Task<VM> FirstOrDefaultAsync<VM>()
+            where VM : class
+        {
+            return await new FirstOrDefaultImpl<M>(DC).FirstOrDefaultAsync<VM>();
+        }
+        /// <summary>
+        /// 单表数据查询
+        /// </summary>
+        public async Task<T> FirstOrDefaultAsync<T>(Expression<Func<M, T>> columnMapFunc)
+        {
+            return await new FirstOrDefaultImpl<M>(DC).FirstOrDefaultAsync<T>(columnMapFunc);
+
         }
     }
 }

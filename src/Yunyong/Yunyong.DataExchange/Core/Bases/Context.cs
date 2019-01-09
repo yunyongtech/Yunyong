@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using Yunyong.Core;
 using Yunyong.DataExchange.AdoNet;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
 using Yunyong.DataExchange.Core.Helper;
 using Yunyong.DataExchange.DataRainbow.MySQL;
+using GenericHelper = Yunyong.DataExchange.Core.Helper.GenericHelper;
 
 namespace Yunyong.DataExchange.Core.Bases
 {

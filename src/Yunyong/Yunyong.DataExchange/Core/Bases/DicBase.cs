@@ -1,4 +1,5 @@
-﻿using Yunyong.DataExchange.Core.Enums;
+﻿using Yunyong.Core;
+using Yunyong.DataExchange.Core.Enums;
 
 namespace Yunyong.DataExchange.Core.Bases
 {

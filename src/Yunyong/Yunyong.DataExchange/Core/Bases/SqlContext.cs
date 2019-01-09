@@ -1,3 +1,4 @@
+using Yunyong.Core;
 using Yunyong.DataExchange.Core.Common;
 using Yunyong.DataExchange.Core.Enums;
 
