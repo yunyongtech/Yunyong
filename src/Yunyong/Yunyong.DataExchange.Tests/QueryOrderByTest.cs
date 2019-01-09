@@ -37,7 +37,7 @@ namespace Yunyong.DataExchange.Tests
         }
 
         [Test]
-        public async Task Test1()
+        public async Task TestListOrderBy()
         {
             {
                 Conn.OpenDebug();
@@ -52,6 +52,15 @@ namespace Yunyong.DataExchange.Tests
                 Conn.OpenDebug();
                 var result = await Conn.TopAsync<UserInfo>(5, a => a.Name.Contains("2"), new[] { new OrderBy() { Field = "Name", Desc = true }, new OrderBy() { Field = "CreatedOn" }, });
             }
+            Assert.Pass();
+        }
+
+        [Test]
+        public async Task TestFirstOrDefulatOrderBy()
+        {
+            Conn.OpenDebug();
+            var result = await Conn.FirstOrDefaultAsync<UserInfo>(a=>a.Name.Contains("12"), new[] { new OrderBy() { Field = "Name", Desc = true }, new OrderBy() { Field = "CreatedOn" }, });
+
             Assert.Pass();
         }
     }
