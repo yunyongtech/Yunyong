@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using NUnit.Framework;
 using Yunyong.Core;
 using Yunyong.DataExchange.Tests.Models;
@@ -40,7 +41,16 @@ namespace Yunyong.DataExchange.Tests
         {
             {
                 Conn.OpenDebug();
-                var result = await Conn.ListAsync<UserInfo>(a=>a.Name.Contains("2"), new[] { new OrderBy() { Field = "Name", Desc = true },new OrderBy(){Field = "CreatedOn"},  });
+                var result = await Conn.ListAsync<UserInfo>(a => a.Name.Contains("2"), new[] { new OrderBy() { Field = "Name", Desc = true }, new OrderBy() { Field = "CreatedOn" }, });
+            }
+            Assert.Pass();
+        }
+        [Test]
+        public async Task TestTopOrderBy()
+        {
+            {
+                Conn.OpenDebug();
+                var result = await Conn.TopAsync<UserInfo>(5, a => a.Name.Contains("2"), new[] { new OrderBy() { Field = "Name", Desc = true }, new OrderBy() { Field = "CreatedOn" }, });
             }
             Assert.Pass();
         }
