@@ -464,6 +464,26 @@ namespace Yunyong.DataExchange
                 return await conn.Queryer<M>().Where(condition).PagingListAsync<VM>(option);
             }
         }
+
+
+        /// <summary>
+        ///     Queryer 便捷 PagingListAsync 方法
+        /// </summary>
+        public static async Task<PagingList<VM>> PagingListAsync<M, VM>(this IDbConnection conn, Expression<Func<M, bool>> condition, PagingQueryOption option, Expression<Func<M, VM>> columnMapFunc = null)
+            where M : class, new()
+            where VM : class
+        {
+            if (columnMapFunc != null)
+            {
+                return await conn.Queryer<M>().Where(condition).PagingListAsync<VM>(option, columnMapFunc);
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().Where(condition).PagingListAsync<VM>(option);
+            }
+        }
+
         /// <summary>
         ///     Queryer 便捷 PagingListAsync 方法
         /// </summary>
