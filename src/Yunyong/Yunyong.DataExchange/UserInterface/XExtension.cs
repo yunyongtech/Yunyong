@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Internal;
@@ -446,6 +447,23 @@ namespace Yunyong.DataExchange
             return await conn.Queryer<M>().Where(option).PagingListAsync<VM>(option);
         }
 
+        /// <summary>
+        ///     Queryer 便捷 PagingListAsync 方法
+        /// </summary>
+        public static async Task<PagingList<VM>> PagingListAsync<M, VM>(this IDbConnection conn, ExpandoObject condition, PagingQueryOption option, Expression<Func<M, VM>> columnMapFunc = null)
+            where M : class, new()
+            where VM : class
+        {
+            if (columnMapFunc != null)
+            {
+                return await conn.Queryer<M>().Where(condition).PagingListAsync<VM>(option, columnMapFunc);
+
+            }
+            else
+            {
+                return await conn.Queryer<M>().Where(condition).PagingListAsync<VM>(option);
+            }
+        }
         /// <summary>
         ///     Queryer 便捷 PagingListAsync 方法
         /// </summary>
