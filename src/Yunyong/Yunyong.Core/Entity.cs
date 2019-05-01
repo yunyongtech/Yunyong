@@ -14,13 +14,13 @@ namespace Yunyong.Core
         /// </summary>
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
+        public Guid Id { get; internal set; }
 
         /// <summary>
         ///     创建时间
         /// </summary>
         [Timestamp]
-        public DateTime CreatedOn { get; set; }
+        public DateTime CreatedOn { get;internal set; }
 
         //public DateTime? UpdatedOn { get; set; }
     }
