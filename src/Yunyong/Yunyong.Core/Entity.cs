@@ -19,9 +19,9 @@ namespace Yunyong.Core
         /// <summary>
         ///     创建时间
         /// </summary>
-        [Timestamp]
         public DateTime CreatedOn { get;internal set; }
 
-        //public DateTime? UpdatedOn { get; set; }
+        [Timestamp]
+        public DateTime? UpdatedOn { get; set; }
     }
 }
