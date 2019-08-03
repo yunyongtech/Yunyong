@@ -22,6 +22,6 @@ namespace Yunyong.Core
         public DateTime CreatedOn { get;internal set; }
 
         [Timestamp]
-        public DateTime? UpdatedOn { get; set; }
+        public DateTime? UpdatedOn { get;internal set; }
     }
 }
