@@ -8,12 +8,9 @@
     {
         //public static readonly AsyncTaskResult<T> Success = new AsyncTaskResult<T>(AsyncTaskStatus.Success, null);
 
-        /// <summary>
-        ///     Parameterized constructor.
-        /// </summary>
-        public AsyncTaskTResult(AsyncTaskStatus status)
-            : this(status, null, default(T))
+        public AsyncTaskTResult():this(AsyncTaskStatus.Success, default(T))
         {
+            
         }
 
         /// <summary>
@@ -43,7 +40,7 @@
         /// <summary>
         ///     Parameterized constructor.
         /// </summary>
-        public AsyncTaskTResult(AsyncTaskStatus status, string errorMessage, T data)
+        public AsyncTaskTResult(AsyncTaskStatus status, string errorMessage = null, T data = default(T))
             : base(status, errorMessage)
         {
             Data = data;
