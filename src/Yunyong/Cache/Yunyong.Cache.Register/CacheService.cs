@@ -11,12 +11,12 @@ namespace Yunyong.Cache.Register
     {
         public List<T> GetByPattern<T>(string pattern)
         {
-            return Cache.GetByPattern<T>($"n:{Cache.CacheName},c:{pattern}");
+            return Cache.GetByPattern<T>($"*{Cache.CacheName}*{pattern}*");
         }
 
         public List<T> GetAll<T>()
         {
-            return Cache.GetByPattern<T>($"n:{Cache.CacheName}");
+            return Cache.GetByPattern<T>($@"*{Cache.CacheName}*");
         }
 
         #region Member

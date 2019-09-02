@@ -25,15 +25,16 @@ namespace Yunyong.Cache.Redis
 
         public override T GetOrDefault<T>(string key)
         {
-            key = GetKey(key);
+            var newKey = GetKey(key);
 
-            var redisValue = _database.StringGet(key);
+            var redisValue = _database.StringGet(newKey);
 
             return redisValue.HasValue ? JsonConvert.DeserializeObject<T>(redisValue) : default(T);
         }
 
         public override List<T> GetByPattern<T>(string pattern)
         {
+            //Cache.Execute("keys", $"*{Cache.CacheName}*{pattern}*") as RedisResult;
             var keys = _database.Execute("keys", pattern);
             var vals = _database.StringGet((RedisKey[]) keys);
             var result = new List<T>();
