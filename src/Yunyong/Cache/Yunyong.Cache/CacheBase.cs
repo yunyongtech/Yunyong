@@ -42,8 +42,11 @@ namespace Yunyong.Cache
         #endregion
 
         #region Service
-
+        public abstract bool KeyExists(string key);
         public abstract T GetOrDefault<T>(string key);
+        public abstract Object GetOrDefault(string key, Type type);
+
+        public abstract string GetJson(string key);
 
 
         public abstract void Set(string key, object value, TimeSpan? slidingExpireTime = null,

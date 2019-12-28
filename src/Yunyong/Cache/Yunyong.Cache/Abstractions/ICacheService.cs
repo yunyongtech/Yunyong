@@ -16,7 +16,18 @@ namespace Yunyong.Cache.Abstractions
         /// <param name="key"></param>
         /// <returns></returns>
         T GetOrDefault<T>(string key);
+        /// <summary>
+        ///     获取Key值，没有则设置默认值并获取
+        /// </summary>
+        T GetOrDefault<T>(string key, Func<T> func, TimeSpan? slidingExpireTime = null, TimeSpan? absoluteExpireTime = null);
 
+        /// <summary>
+        ///     获取key值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        object GetOrDefault(string key, Type type);
         /// <summary>
         ///     设置key值
         /// </summary>

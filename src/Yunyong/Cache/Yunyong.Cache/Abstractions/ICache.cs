@@ -28,6 +28,8 @@ namespace Yunyong.Cache.Abstractions
         /// </summary>
         TimeSpan? DefaultAbsoluteExpireTime { get; set; }
 
+        bool KeyExists(string key);
+
         /// <summary>
         ///     获取key值
         /// </summary>
@@ -35,6 +37,21 @@ namespace Yunyong.Cache.Abstractions
         /// <param name="key"></param>
         /// <returns></returns>
         T GetOrDefault<T>(string key);
+
+        /// <summary>
+        /// 获取Key值Json
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        string GetJson(string key);
+        /// <summary>
+        ///     获取key值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        Object GetOrDefault(string key, Type type);
 
         /// <summary>
         ///     设置key值

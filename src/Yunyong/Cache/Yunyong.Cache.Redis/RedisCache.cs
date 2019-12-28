@@ -23,6 +23,11 @@ namespace Yunyong.Cache.Redis
             _cacheName = cacheNane;
         }
 
+        public override bool KeyExists(string key)
+        {
+            return _database.KeyExists(key);
+        }
+
         public override T GetOrDefault<T>(string key)
         {
             var newKey = GetKey(key);
@@ -32,11 +37,29 @@ namespace Yunyong.Cache.Redis
             return redisValue.HasValue ? JsonConvert.DeserializeObject<T>(redisValue) : default(T);
         }
 
+        public override object GetOrDefault(string key, Type type)
+        {
+            var newKey = GetKey(key);
+
+            var redisValue = _database.StringGet(newKey);
+
+            return redisValue.HasValue ? JsonConvert.DeserializeObject(redisValue, type) : default;
+        }
+
+        public override string GetJson(string key)
+        {
+            var newKey = GetKey(key);
+
+            var redisValue = _database.StringGet(newKey);
+
+            return redisValue.HasValue ? redisValue.ToString() : default(string);
+        }
+
         public override List<T> GetByPattern<T>(string pattern)
         {
             //Cache.Execute("keys", $"*{Cache.CacheName}*{pattern}*") as RedisResult;
             var keys = _database.Execute("keys", pattern);
-            var vals = _database.StringGet((RedisKey[]) keys);
+            var vals = _database.StringGet((RedisKey[])keys);
             var result = new List<T>();
             foreach (var redisValue in vals)
             {
@@ -104,7 +127,7 @@ namespace Yunyong.Cache.Redis
         public override object GetKeyValues(string pattern)
         {
             var result = _database.Execute("keys", pattern);
-            return _database.StringGet((RedisKey[]) result);
+            return _database.StringGet((RedisKey[])result);
         }
 
 
@@ -112,5 +135,7 @@ namespace Yunyong.Cache.Redis
         {
             return "n:" + _cacheName + ",c:" + key;
         }
+
+
     }
 }

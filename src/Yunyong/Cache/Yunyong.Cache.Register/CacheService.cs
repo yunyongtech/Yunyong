@@ -62,6 +62,13 @@ namespace Yunyong.Cache.Register
             return tmp;
         }
 
+        public object GetOrDefault(string key, Type type)
+        {
+            return Cache.GetOrDefault(key, type);
+        }
+
+
+
         public void Set(string key, object value, TimeSpan? slidingExpireTime = null,
             TimeSpan? absoluteExpireTime = null)
         {
@@ -83,6 +90,8 @@ namespace Yunyong.Cache.Register
         {
             return Cache.GetKeyValues($"*{Cache.CacheName}*{pattern}*");
         }
+
+
 
         #endregion
     }
