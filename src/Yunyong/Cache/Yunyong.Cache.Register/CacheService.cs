@@ -13,7 +13,10 @@ namespace Yunyong.Cache.Register
         {
             return Cache.GetByPattern<T>($"*{Cache.CacheName}*{pattern}*");
         }
-
+        public bool KeyExists(string key)
+        {
+            return Cache.KeyExists(key);
+        }
         public List<T> GetAll<T>()
         {
             return Cache.GetByPattern<T>($@"*{Cache.CacheName}*");

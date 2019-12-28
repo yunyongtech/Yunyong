@@ -10,6 +10,13 @@ namespace Yunyong.Cache.Abstractions
     public interface ICacheService<TCacheContext>
     {
         /// <summary>
+        ///     检查Key是否存在
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        bool KeyExists(string key);
+
+        /// <summary>
         ///     获取key值
         /// </summary>
         /// <typeparam name="T"></typeparam>
