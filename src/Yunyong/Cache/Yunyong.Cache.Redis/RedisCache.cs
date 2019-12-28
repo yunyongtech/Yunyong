@@ -25,7 +25,7 @@ namespace Yunyong.Cache.Redis
 
         public override bool KeyExists(string key)
         {
-            return _database.KeyExists(key);
+            return _database.KeyExists(GetKey(key));
         }
 
         public override T GetOrDefault<T>(string key)

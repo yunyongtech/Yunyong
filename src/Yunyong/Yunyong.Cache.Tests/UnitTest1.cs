@@ -57,6 +57,12 @@ namespace Tests
                 var keys = service.GetKeys();
                 var items = service.GetAll<MyData>();
                 Assert.AreEqual(10, items.Count);
+
+                for (int i = 0; i < 10; i++)
+                {
+                    Assert.IsTrue(service.KeyExists($"{i:000}"));
+                }
+
             }
         }
     }
