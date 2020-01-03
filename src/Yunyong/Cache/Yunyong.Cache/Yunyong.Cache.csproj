@@ -9,7 +9,7 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable.Surrogate" Version="1.1.2" />
+    <PackageReference Include="System.Collections.Immutable.Surrogate" Version="1.2.0" />
   </ItemGroup>
 
 </Project>

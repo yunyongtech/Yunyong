@@ -21,25 +21,6 @@ namespace Yunyong.EventBus.EasyNetQ
                 new EventBusEasyNetQ(p.GetService<IBus>(), p, config.Prefix, p.GetService<ILoggerFactory>()));
 
             services.AddTransient<ServiceActionInvokeTrackAttribute>();
-
-            //if (config.AopInject)
-            //    services.AddDynamicProxy(configure =>
-            //    {
-            //        configure.Interceptors.AddServiced<ServiceActionInvokeTrackAttribute>(method =>
-            //            method.DeclaringType?.Namespace != null &&
-            //            (method.DeclaringType.Name.EndsWith("Service") ||
-            //             method.DeclaringType.Name.EndsWith("ServiceBase"))
-            //            && method.DeclaringType.GetInterface(typeof(IService).FullName) != null
-            //            && method.DeclaringType.GetCustomAttribute<AopIgnoreAttribute>() == null
-            //            && !method.Name.Contains("Context"));
-
-            //        //configure.Interceptors.AddTyped<ServiceActionInvokeTrackAttribute>(method =>
-            //        //    method.DeclaringType.Name.EndsWith("Service")
-            //        //    && method.DeclaringType.GetInterface(typeof(IService).FullName) != null
-            //        //    && !method.DeclaringType.IsSubclassOf(typeof(HttpProxyServiceBase))
-            //        //    && !method.Name.Contains("Context")
-            //        //    );
-            //    });
             return services;
         }
 
@@ -51,7 +32,9 @@ namespace Yunyong.EventBus.EasyNetQ
 
             services.RegisterEasyNetQ(configuration);
 
-            return services.BuildAspectInjectorProvider();
+            //return services.BuildAspectInjectorProvider();
+
+            return services.BuildDynamicProxyProvider();
         }
     }
 }
